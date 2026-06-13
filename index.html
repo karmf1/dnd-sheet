@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Engineer Character Sheet</title>
+<!-- Add to Home Screen support (iOS Safari) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Engineer">
+<meta name="theme-color" content="#1a1008">
+<!-- Home screen icon: brass gear on dark background, generated inline as a data URI -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231a1008'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='%23d4943a'%3E%E2%9A%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+:root {
+  --navy:#1a1008; --blueprint:#2a1a08; --panel:#221408;
+  --brass:#d4943a; --brass-dim:#8a5e1e;
+  --cyan:#c8852a; --cyan-dim:#7a4e12;
+  --parchment:#e8d4a8; --parchment-dim:#a08858;
+  --red:#c84030; --green:#7ab840; --orange:#e07820;
+  --white:#f0e4c8; --border:#5a3a14;
+  --grid:rgba(212,148,58,0.07);
+  --armour-glow:rgba(212,148,58,0.2);
+  --copper:#b8621a; --iron:#4a3828; --steam:#d8c8a8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--navy);color:var(--white);font-family:'Rajdhani',sans-serif;font-size:15px;min-height:100vh;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    radial-gradient(ellipse at 20% 50%, rgba(100,50,10,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(80,40,10,0.12) 0%, transparent 50%);
+  background-size:40px 40px, 40px 40px, 100% 100%, 100% 100%;}
+
+/* ARMOUR MODE tint */
+body.armoured { --panel:#141e0a; --border:#3a6014; --blueprint:#182808; }
+body.armoured .header { border-bottom-color:#7ab840; background:linear-gradient(135deg,#0c1205 0%,#182808 60%,#0c1205 100%); }
+body.armoured .panel::before { background:linear-gradient(90deg,transparent,#7ab84044,transparent); }
+
+/* ARMOUR TOGGLE */
+.armour-toggle-wrap {
+  display:flex; align-items:center; gap:12px;
+  padding:8px 24px; background:#0e0804; border-bottom:1px solid var(--border);
+  justify-content:flex-end;
+}
+.armour-toggle-label {
+  font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:3px;
+  text-transform:uppercase; color:var(--parchment-dim);
+}
+.armour-toggle-label.active { color:var(--green); }
+.toggle-switch {
+  position:relative; width:56px; height:26px; cursor:pointer;
+}
+.toggle-switch input { display:none; }
+.toggle-track {
+  position:absolute; inset:0;
+  background:#0a1520; border:2px solid var(--border);
+  transition:all 0.3s;
+}
+.toggle-thumb {
+  position:absolute; top:3px; left:3px;
+  width:16px; height:16px; background:var(--parchment-dim);
+  transition:all 0.3s;
+}
+.toggle-switch input:checked ~ .toggle-track { background:rgba(74,184,122,0.15); border-color:var(--green); }
+.toggle-switch input:checked ~ .toggle-thumb { left:33px; background:var(--green); box-shadow:0 0 8px var(--green); }
+.armour-status-badge {
+  font-family:'Orbitron',monospace; font-size:11px; font-weight:700;
+  padding:4px 12px; letter-spacing:2px;
+  border:1px solid var(--border); color:var(--parchment-dim);
+  transition:all 0.3s;
+}
+.armour-status-badge.on { border-color:var(--green); color:var(--green); background:rgba(74,184,122,0.1); }
+
+/* STAT CHANGE INDICATORS */
+.stat-changed { position:relative; }
+.stat-delta {
+  position:absolute; top:-8px; right:-4px;
+  font-family:'Share Tech Mono',monospace; font-size:9px;
+  background:var(--green); color:var(--navy);
+  padding:1px 4px; white-space:nowrap;
+}
+.stat-delta.neg { background:var(--red); color:white; }
+
+/* HEADER */
+.header {
+  background:linear-gradient(135deg,#0e0804 0%,#2a1a08 40%,#3a2010 60%,#1a1008 100%);
+  border-bottom:2px solid var(--brass); padding:14px 24px;
+  display:flex; align-items:center; gap:20px; position:relative; overflow:hidden;
+  transition:all 0.4s;
+}
+.header::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(-45deg,transparent,transparent 12px,rgba(212,148,58,0.04) 12px,rgba(212,148,58,0.04) 13px);}
+.header-gear{font-size:44px;line-height:1;filter:drop-shadow(0 0 8px var(--brass));animation:spin 20s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.header-info{flex:1;position:relative;}
+.char-name-input{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:var(--brass);
+  background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);outline:none;
+  letter-spacing:2px;width:100%;max-width:400px;}
+.char-sub{color:var(--cyan);font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-top:4px;font-family:'Share Tech Mono',monospace;}
+.header-badges{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+.badge{background:rgba(74,158,202,0.15);border:1px solid var(--cyan-dim);color:var(--cyan);
+  padding:2px 8px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:'Share Tech Mono',monospace;}
+.badge.brass{background:rgba(200,169,110,0.1);border-color:var(--brass-dim);color:var(--brass);}
+.badge.green{background:rgba(74,184,122,0.1);border-color:var(--green);color:var(--green);}
+.level-badge{background:var(--brass);color:var(--navy);font-family:'Orbitron',monospace;font-weight:900;
+  font-size:18px;padding:8px 14px;align-self:center;flex-shrink:0;letter-spacing:1px;}
+
+/* TABS */
+.tabs{display:flex;background:#0e0804;border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab{padding:11px 18px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;cursor:pointer;color:var(--parchment-dim);border-bottom:2px solid transparent;
+  white-space:nowrap;transition:all 0.2s;user-select:none;}
+.tab:hover{color:var(--cyan);}
+.tab.active{color:var(--brass);border-bottom-color:var(--brass);background:rgba(200,169,110,0.06);}
+
+/* LAYOUT */
+.page{display:none;padding:16px;max-width:1440px;margin:0 auto;}
+.page.active{display:block;}
+.grid-3{display:grid;grid-template-columns:210px 1fr 230px;gap:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:960px){.grid-3,.grid-2{grid-template-columns:1fr;}}
+
+/* PANELS */
+.panel{background:var(--panel);border:1px solid var(--border);position:relative;margin-bottom:14px;transition:border-color 0.3s;}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--brass-dim),transparent);transition:all 0.3s;}
+.panel-header{padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;
+  text-transform:uppercase;color:var(--brass-dim);border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;}
+.panel-body{padding:12px;}
+.panel-body.collapsed{display:none;}
+.panel-header{cursor:pointer;user-select:none;}
+.panel-header:hover{color:var(--brass);}
+.panel-collapse-icon{margin-left:auto;font-size:11px;color:var(--border);transition:transform 0.2s;display:inline-block;}
+.panel-header.open .panel-collapse-icon{transform:rotate(180deg);}
+
+
+/* ABILITY SCORES */
+.ability-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.ability-box{background:var(--navy);border:1px solid var(--border);text-align:center;padding:7px 4px;transition:border-color 0.2s;}
+.ability-box.boosted{border-color:var(--green) !important;}
+.ability-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--parchment-dim);text-transform:uppercase;}
+.ability-score{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--white);line-height:1;
+  margin:2px 0;background:transparent;border:none;outline:none;width:58px;text-align:center;}
+.ability-mod{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--brass);font-weight:bold;}
+.ability-mod.boosted{color:var(--green);}
+
+/* STATS ROW */
+.stats-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.stat-box{background:var(--navy);border:1px solid var(--border);padding:7px 10px;text-align:center;min-width:68px;flex:1;transition:border-color 0.3s;}
+.stat-box.boosted{border-color:var(--green);}
+.stat-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--brass-dim);text-transform:uppercase;display:block;margin-bottom:2px;}
+.stat-value{font-family:'Orbitron',monospace;font-size:19px;font-weight:700;color:var(--cyan);}
+.stat-value.editable,.stat-value input{cursor:text;background:transparent;border:none;outline:none;width:58px;text-align:center;color:var(--cyan);font-family:'Orbitron',monospace;font-size:19px;font-weight:700;}
+
+/* HP */
+.hp-display{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.hp-current{font-family:'Orbitron',monospace;font-size:46px;font-weight:900;color:var(--green);line-height:1;
+  background:transparent;border:none;outline:none;width:110px;}
+.hp-sep{color:var(--border);font-size:34px;}
+.hp-max{font-family:'Orbitron',monospace;font-size:22px;color:var(--parchment-dim);background:transparent;border:none;outline:none;width:74px;}
+.hp-bar-track{height:7px;background:#0a1520;border:1px solid var(--border);overflow:hidden;}
+.hp-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),#2aff8a);transition:width 0.3s;}
+.hp-buttons{display:flex;gap:5px;margin-top:7px;align-items:center;flex-wrap:wrap;}
+.hp-input{width:54px;background:var(--navy);border:1px solid var(--border);color:var(--white);
+  padding:4px 6px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;text-align:center;}
+.btn{padding:5px 11px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;
+  cursor:pointer;border:none;text-transform:uppercase;transition:all 0.15s;}
+.btn-red{background:var(--red);color:white;} .btn-red:hover{background:#e05555;}
+.btn-green{background:var(--green);color:var(--navy);} .btn-green:hover{background:#5acf8a;}
+.btn-cyan{background:var(--cyan-dim);color:white;} .btn-cyan:hover{background:var(--cyan);}
+.btn-brass{background:var(--brass-dim);color:var(--navy);} .btn-brass:hover{background:var(--brass);}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--parchment-dim);}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan);}
+
+/* SKILLS */
+.skill-row{display:flex;align-items:center;gap:7px;padding:3px 0;border-bottom:1px solid rgba(30,74,122,0.3);font-size:12px;}
+.skill-row:last-child{border-bottom:none;}
+.prof-dot{width:10px;height:10px;border:2px solid var(--parchment-dim);border-radius:50%;cursor:pointer;flex-shrink:0;transition:all 0.15s;}
+.prof-dot.proficient{background:var(--cyan);border-color:var(--cyan);}
+.prof-dot.expert{background:var(--brass);border-color:var(--brass);box-shadow:0 0 4px var(--brass);}
+.skill-name{flex:1;color:var(--parchment-dim);}
+.skill-name.proficient{color:var(--white);}
+.skill-bonus{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--cyan);min-width:26px;text-align:right;font-weight:bold;}
+.skill-ability{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--parchment-dim);min-width:22px;text-align:center;}
+
+/* DEATH SAVES */
+.death-saves{display:flex;gap:14px;align-items:center;}
+.save-dots{display:flex;gap:5px;}
+.save-dot{width:14px;height:14px;border:2px solid;border-radius:50%;cursor:pointer;transition:background 0.15s;}
+.save-dot.success{border-color:var(--green);}  .save-dot.success.filled{background:var(--green);}
+.save-dot.fail{border-color:var(--red);}  .save-dot.fail.filled{background:var(--red);}
+.save-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--parchment-dim);}
+
+/* RESOURCE PIPS */
+.resource-row{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid rgba(30,74,122,0.3);}
+.resource-row:last-child{border-bottom:none;}
+.resource-name{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--parchment-dim);letter-spacing:1px;flex:1;text-transform:uppercase;}
+.resource-pips{display:flex;gap:4px;flex-wrap:wrap;}
+.resource-pip{width:13px;height:13px;border:2px solid var(--cyan-dim);border-radius:50%;cursor:pointer;transition:all 0.15s;}
+.resource-pip.used{background:var(--cyan);border-color:var(--cyan);}
+
+/* ROLL BTN */
+.roll-btn{font-family:'Share Tech Mono',monospace;font-size:9px;background:rgba(74,158,202,0.1);
+  border:1px solid var(--cyan-dim);color:var(--cyan);padding:2px 6px;cursor:pointer;letter-spacing:1px;transition:all 0.15s;}
+.roll-btn:hover{background:var(--cyan);color:var(--navy);}
+
+/* ATTACKS */
+.attack-row{display:grid;grid-template-columns:1fr 72px 88px 90px 28px;gap:5px;padding:5px 0;
+  border-bottom:1px solid rgba(30,74,122,0.3);font-family:'Share Tech Mono',monospace;font-size:11px;align-items:center;}
+.attack-row.header{color:var(--brass-dim);font-size:9px;letter-spacing:1px;}
+
+/* CONDITIONS */
+.condition-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.condition-toggle{padding:4px 6px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;border:1px solid var(--border);color:var(--parchment-dim);
+  background:var(--navy);text-align:center;user-select:none;transition:all 0.15s;}
+.condition-toggle.active{background:rgba(200,68,68,0.2);border-color:var(--red);color:var(--red);}
+.exh-box{width:19px;height:19px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:10px;color:transparent;transition:all 0.15s;}
+.exh-box.filled{background:rgba(200,68,68,0.2);border-color:var(--red);color:var(--red);}
+
+/* AC SHIELD */
+.ac-shield{position:relative;width:60px;height:68px;margin:0 auto;display:flex;align-items:center;justify-content:center;}
+.ac-shield svg{position:absolute;top:0;left:0;}
+.ac-value{font-family:'Orbitron',monospace;font-size:21px;font-weight:900;color:var(--white);position:relative;z-index:1;
+  background:transparent;border:none;outline:none;width:48px;text-align:center;}
+
+/* INVENTION CARD */
+.inv-card{background:var(--navy);border:1px solid var(--border);margin-bottom:7px;overflow:hidden;}
+.inv-card-hdr{padding:8px 11px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;transition:background 0.15s;}
+.inv-card-hdr:hover{background:rgba(74,158,202,0.07);}
+.inv-card-body{padding:9px 11px;border-top:1px solid var(--border);display:none;font-size:12px;color:var(--parchment-dim);line-height:1.5;}
+.inv-card-body.open{display:block;}
+.inv-name-inp{background:transparent;border:none;border-bottom:1px dashed var(--cyan-dim);color:var(--cyan);
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;outline:none;flex:1;}
+.inv-lvl-tag{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px;white-space:nowrap;}
+.use-pip{width:16px;height:16px;border:2px solid var(--brass-dim);border-radius:3px;cursor:pointer;transition:all 0.15s;flex-shrink:0;}
+.use-pip.used{background:var(--brass);border-color:var(--brass);box-shadow:0 0 5px rgba(200,169,110,0.4);}
+
+/* LIBRARY */
+.lib-search{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--white);
+  padding:7px 10px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;margin-bottom:10px;}
+.lib-search:focus{border-color:var(--cyan-dim);}
+.lib-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.lib-filter-btn{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 10px;
+  cursor:pointer;border:1px solid var(--border);color:var(--parchment-dim);background:transparent;transition:all 0.15s;}
+.lib-filter-btn:hover,.lib-filter-btn.active{border-color:var(--brass-dim);color:var(--brass);background:rgba(200,169,110,0.08);}
+.lib-item{background:var(--navy);border:1px solid var(--border);margin-bottom:6px;overflow:hidden;}
+.lib-item-hdr{padding:8px 11px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background 0.15s;}
+.lib-item-hdr:hover{background:rgba(74,158,202,0.05);}
+.lib-item-name{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:1px;}
+.lib-item-tags{display:flex;gap:5px;align-items:center;}
+.lib-tag{font-family:'Share Tech Mono',monospace;font-size:9px;padding:1px 6px;border:1px solid;letter-spacing:1px;}
+.lib-tag.gadget{color:var(--cyan-dim);border-color:var(--cyan-dim);}
+.lib-tag.lv1{color:#7ab8d4;border-color:#2a5a7a;}
+.lib-tag.lv2{color:#8ab04a;border-color:#4a7a2a;}
+.lib-tag.lv3{color:#c8a030;border-color:#7a6020;}
+.lib-tag.lv4{color:#c86030;border-color:#7a3010;}
+.lib-tag.lv5{color:#c84080;border-color:#7a2050;}
+.lib-tag.lv6{color:#b040c8;border-color:#6a1078;}
+.lib-tag.lv7{color:#8040c8;border-color:#4a1078;}
+.lib-tag.upgrade{color:var(--brass-dim);border-color:var(--brass-dim);}
+.lib-tag.equipped{color:var(--green);border-color:var(--green);background:rgba(74,184,122,0.1);}
+.lib-item-body{padding:9px 11px;border-top:1px solid var(--border);display:none;font-size:12px;color:var(--parchment-dim);line-height:1.5;}
+.lib-item-body.open{display:block;}
+.lib-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.lib-meta-tag{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);
+  background:rgba(200,169,110,0.08);border:1px solid var(--brass-dim);padding:1px 5px;letter-spacing:1px;}
+.lib-equip-btn{padding:5px 14px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;
+  cursor:pointer;border:none;text-transform:uppercase;margin-top:8px;transition:all 0.15s;}
+.lib-equip-btn.equip{background:var(--green);color:var(--navy);}
+.lib-equip-btn.equip:hover{background:#5acf8a;}
+.lib-equip-btn.unequip{background:rgba(200,68,68,0.2);color:var(--red);border:1px solid var(--red);}
+.lib-equip-btn.unequip:hover{background:rgba(200,68,68,0.35);}
+.lib-equip-btn.gadget-btn{background:var(--cyan-dim);color:white;}
+.lib-equip-btn.gadget-btn:hover{background:var(--cyan);}
+
+/* EQUIPPED PANEL */
+.equipped-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.eq-slot{background:var(--navy);border:1px solid var(--border);padding:8px 10px;position:relative;}
+.eq-slot.filled{border-color:var(--green);}
+.eq-slot.upgrade-slot-filled{border-color:var(--brass-dim);}
+.eq-slot-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--parchment-dim);text-transform:uppercase;margin-bottom:3px;}
+.eq-slot-name{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);}
+.eq-slot-name.upgrade{color:var(--brass);}
+.eq-slot.empty .eq-slot-name{color:var(--border);font-style:italic;}
+.eq-remove{position:absolute;top:5px;right:6px;font-size:9px;color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;letter-spacing:1px;}
+.eq-remove:hover{color:#ff6666;}
+
+/* ACTIVE EFFECTS */
+.effect-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid rgba(30,74,122,0.25);font-size:11px;}
+.effect-row:last-child{border-bottom:none;}
+.effect-icon{font-size:14px;flex-shrink:0;line-height:1.4;}
+.effect-text{color:var(--parchment-dim);line-height:1.4;flex:1;}
+.effect-source{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px;}
+
+/* UPGRADE SLOT UI */
+.upgrade-slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.upg-slot{background:var(--navy);border:2px dashed var(--border);padding:9px 10px;text-align:center;cursor:pointer;transition:all 0.2s;min-height:60px;display:flex;flex-direction:column;justify-content:center;}
+.upg-slot:hover{border-color:var(--brass-dim);}
+.upg-slot.filled{border-style:solid;border-color:var(--brass-dim);cursor:default;}
+.upg-slot-num{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--parchment-dim);margin-bottom:3px;}
+.upg-slot-name{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--brass);letter-spacing:1px;}
+.upg-slot.empty .upg-slot-name{color:var(--border);font-style:italic;font-size:9px;}
+
+/* SECTION DIVIDER */
+.section-title{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--brass-dim);text-transform:uppercase;
+  margin:14px 0 7px;display:flex;align-items:center;gap:8px;}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+/* ROLL DISPLAY */
+.roll-display{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:var(--navy);border:2px solid var(--brass);padding:11px 22px;
+  font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--brass);
+  z-index:200;display:none;text-align:center;min-width:150px;box-shadow:0 0 40px rgba(200,169,110,0.3);}
+.roll-display.show{display:block;animation:rollIn 0.2s ease;}
+@keyframes rollIn{from{opacity:0;transform:translateX(-50%) scale(0.8);}}
+.roll-label{font-size:10px;color:var(--parchment-dim);letter-spacing:2px;display:block;margin-bottom:3px;}
+
+/* SAVE INDICATOR */
+.save-indicator{position:fixed;bottom:16px;right:16px;background:var(--green);color:var(--navy);
+  padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;display:none;z-index:100;}
+
+.inline-edit{background:transparent;border:none;border-bottom:1px dashed var(--border);color:inherit;font:inherit;outline:none;width:100%;}
+.inline-edit:focus{border-bottom-color:var(--cyan);}
+.small{font-size:10px;color:var(--parchment-dim);}
+.notes-area{width:100%;background:var(--navy);border:1px solid var(--border);color:var(--white);
+  font-family:'Rajdhani',sans-serif;font-size:13px;padding:9px;resize:vertical;outline:none;min-height:90px;line-height:1.5;}
+.notes-area:focus{border-color:var(--cyan-dim);}
+.pa-die-display{font-family:'Orbitron',monospace;font-size:22px;color:var(--cyan);text-align:center;
+  padding:7px;border:1px solid var(--cyan-dim);background:rgba(74,158,202,0.08);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:none;justify-content:center;align-items:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--panel);border:1px solid var(--border);width:90%;max-width:560px;max-height:80vh;overflow-y:auto;}
+.modal-hdr{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:3px;color:var(--brass);text-transform:uppercase;}
+.modal-close{background:none;border:none;color:var(--parchment-dim);font-size:20px;cursor:pointer;line-height:1;}
+.modal-close:hover{color:var(--red);}
+.modal-body{padding:14px;}
+
+/* BREAKDOWN POPUP */
+.bd-popup{
+  position:fixed; z-index:500;
+  background:#1e1208; border:1px solid var(--brass);
+  min-width:260px; max-width:340px;
+  box-shadow:0 6px 40px rgba(0,0,0,0.85), 0 0 0 1px rgba(212,148,58,0.2);
+  animation:bdIn 0.15s ease;
+  pointer-events:all;
+}
+@keyframes bdIn{from{opacity:0;transform:scale(0.9) translateY(-8px);}}
+.bd-popup::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,var(--brass),transparent);}
+.bd-header{padding:9px 12px 7px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+.bd-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--brass);letter-spacing:1px;}
+.bd-close{background:none;border:none;color:var(--parchment-dim);font-size:18px;cursor:pointer;line-height:1;padding:0 3px;}
+.bd-close:hover{color:var(--red);}
+.bd-total-row{padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:10px;}
+.bd-total-num{font-family:'Orbitron',monospace;font-size:38px;font-weight:900;color:var(--brass);line-height:1;text-shadow:0 0 20px rgba(212,148,58,0.4);}
+.bd-total-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--parchment-dim);text-transform:uppercase;}
+.bd-rows{padding:6px 0 4px;}
+.bd-row{display:flex;align-items:center;padding:4px 12px;border-bottom:1px solid rgba(90,58,20,0.3);}
+.bd-row:last-child{border-bottom:none;}
+.bd-row-icon{width:18px;font-size:12px;flex-shrink:0;}
+.bd-row-label{flex:1;color:var(--parchment-dim);font-size:12px;}
+.bd-row-source{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);margin-right:8px;letter-spacing:1px;}
+.bd-row-val{min-width:38px;text-align:right;font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:bold;}
+.bd-row-val.pos{color:var(--green);}
+.bd-row-val.neg{color:var(--red);}
+.bd-row-val.base{color:var(--white);}
+.bd-row-val.zero{color:var(--parchment-dim);}
+.bd-formula{padding:6px 12px 8px;font-family:'Share Tech Mono',monospace;font-size:10px;
+  color:var(--brass-dim);border-top:1px solid var(--border);letter-spacing:1px;background:rgba(0,0,0,0.2);}
+/* Hint cursor on clickable stat values */
+.bd-clickable{cursor:help;position:relative;}
+.bd-clickable:hover{color:var(--brass) !important;}
+
+/* ================================================================
+   iPAD / TOUCH (Apple Pencil & finger) OPTIMIZATIONS
+   ================================================================ */
+@media (pointer: coarse){
+  /* Enlarge small interactive targets to ~32-36px for reliable tapping */
+  .use-pip{width:24px;height:24px;}
+  .resource-pip{width:24px;height:24px;}
+  .prof-dot{width:18px;height:18px;}
+  .roll-btn{padding:6px 12px;font-size:11px;}
+  .btn{padding:8px 14px;font-size:12px;}
+  .condition-toggle{padding:8px 6px;}
+  .exh-box{width:26px;height:26px;}
+  .skill-row,.attack-row{min-height:34px;}
+  /* Prevent iOS double-tap zoom on rapid taps in interactive areas */
+  .inv-card-hdr,.use-pip,.prof-dot,.btn,.roll-btn,.condition-toggle,.exh-box{touch-action:manipulation;}
+  /* Slightly larger text inputs so the Pencil/finger can target them */
+  input[type="number"],input[type="text"]{min-height:28px;}
+}
+
+/* Avoid iOS Safari pinch-zoom rubber-banding issues + safe-area padding for notch/home-indicator */
+html{height:100%;}
+body{
+  -webkit-text-size-adjust:100%;
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.header{padding-top:max(14px, env(safe-area-inset-top));}
+
+/* ================================================================
+   LANDSCAPE-SPECIFIC TIGHTENING (iPad landscape ~1024-1366px wide)
+   ================================================================ */
+@media (orientation: landscape) and (min-width: 900px){
+  .page{padding:10px 18px;}
+  .grid-3{grid-template-columns:230px 1fr 250px;gap:12px;}
+  .panel-body{padding:10px;}
+  .ability-grid{gap:6px;}
+}
+
+/* Standalone (Home Screen app) mode — hide browser chrome cues, fill screen */
+@media (display-mode: standalone){
+  body{padding-top:env(safe-area-inset-top);}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--navy);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+</style>
+</head>
+<body>
+
+<div class="roll-display" id="rollDisplay">
+  <span class="roll-label" id="rollLabel">D20</span>
+  <span id="rollResult">—</span>
+</div>
+<div class="save-indicator" id="saveIndicator">SAVED</div>
+<div id="bdPopup" class="bd-popup" style="display:none"></div>
+
+<!-- UPGRADE SLOT PICKER MODAL -->
+<div class="modal-overlay" id="slotModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">Select Upgrade — Slot <span id="modalSlotNum">1</span></span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-gear">⚙</div>
+  <div class="header-info">
+    <input class="char-name-input" id="charName" value="[Character Name]" placeholder="CHARACTER NAME" />
+    <div class="char-sub">SC5e Engineer · Armourer Discipline</div>
+    <div class="header-badges">
+      <span class="badge">Level 13</span>
+      <span class="badge">Prof +5</span>
+      <span class="badge brass">Armourer</span>
+      <span class="badge" id="badgeGadgets">Gadgets: 0</span>
+      <span class="badge" id="badgeInv">Inventions: 0</span>
+      <span class="badge">Breakthroughs: 6th + 7th Lvl</span>
+      <span class="badge" id="badgeUpgrades">Upgrades: 0/6</span>
+      <span class="badge green" id="badgeArmour" style="display:none">🛡 ARMOURED</span>
+    </div>
+  </div>
+  <div class="level-badge">LVL<br>13</div>
+</div>
+
+<!-- ARMOUR TOGGLE -->
+<div class="armour-toggle-wrap">
+  <span class="armour-toggle-label" id="noArmourLabel">UNARMOURED</span>
+  <label class="toggle-switch">
+    <input type="checkbox" id="armourToggle" onchange="onArmourToggle()">
+    <div class="toggle-track"></div>
+    <div class="toggle-thumb"></div>
+  </label>
+  <span class="armour-toggle-label active" id="armourLabel">POWERED ARMOUR</span>
+  <div class="armour-status-badge" id="armourStatusBadge">OFF</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('main')">⚙ Main</div>
+  <div class="tab" onclick="showTab('library')">📚 Library</div>
+  <div class="tab" onclick="showTab('loadout')">🔩 Loadout</div>
+  <div class="tab" onclick="showTab('features')">📋 Features</div>
+  <div class="tab" onclick="showTab('notes')">📝 Notes</div>
+</div>
+
+<!-- ===== MAIN TAB ===== -->
+<div class="page active" id="tab-main">
+  <div class="grid-3">
+
+    <!-- LEFT -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">Ability Scores <span id="armourAbilityNote" style="color:var(--green);display:none">⚡ ARMOURED</span></div>
+        <div class="panel-body">
+          <div class="ability-grid" id="abilityGrid"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Saving Throws</div>
+        <div class="panel-body" id="savingThrows"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Skills</div>
+        <div class="panel-body" id="skillsPanel"></div>
+      </div>
+    </div>
+
+    <!-- CENTRE -->
+    <div>
+      <!-- STATS ROW -->
+      <div class="stats-row">
+        <div class="stat-box" id="boxAC" style="max-width:90px" onclick="showBreakdown('ac',event)" title="Click for AC breakdown">
+          <span class="stat-label">AC ❓</span>
+          <div class="ac-shield">
+            <svg width="60" height="68" viewBox="0 0 64 72">
+              <path d="M32 4 L60 16 L60 40 Q60 60 32 68 Q4 60 4 40 L4 16 Z" fill="none" stroke="#5a3a14" stroke-width="2"/>
+              <path d="M32 8 L56 18 L56 40 Q56 57 32 64 Q8 57 8 40 L8 18 Z" fill="rgba(26,16,8,0.8)" stroke="#d4943a" stroke-width="1"/>
+            </svg>
+            <div class="ac-value" id="acDisplay">—</div>
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);text-align:center;margin-top:2px">
+            Base: <input id="baseACInput" type="number" value="16" min="0" max="30"
+              style="width:32px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:10px;text-align:center;outline:none;"
+              onclick="event.stopPropagation()"
+              onchange="state.baseAC=parseInt(this.value)||10;updateDerived();buildArmourEffects();saveData()" />
+          </div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);text-align:center;margin-top:2px">
+            <input id="armourNameInput" type="text" value="Chain Mail"
+              style="width:68px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:8px;text-align:center;outline:none;letter-spacing:1px;"
+              placeholder="armour type"
+              onclick="event.stopPropagation()"
+              onchange="state.armourName=this.value;saveData()" />
+          </div>
+        </div>
+        <div class="stat-box bd-clickable" onclick="showBreakdown('initiative',event)" title="Click for breakdown"><span class="stat-label">Initiative ❓</span><div class="stat-value" id="initiativeVal">+0</div></div>
+        <div class="stat-box bd-clickable" id="boxSpeed" onclick="showBreakdown('speed',event)" title="Click for breakdown">
+          <span class="stat-label">Speed ❓</span>
+          <div class="stat-value" id="speedDisplay">25 ft</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);text-align:center;margin-top:2px">
+            Base: <input id="baseSpeedInput" type="number" value="25" min="0" max="120"
+              style="width:32px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:10px;text-align:center;outline:none;"
+              onclick="event.stopPropagation()"
+              onchange="state.baseSpeed=parseInt(this.value)||25;updateDerived();saveData()" />
+          </div>
+        </div>
+        <div class="stat-box"><span class="stat-label">Prof</span><div class="stat-value">+5</div></div>
+        <div class="stat-box bd-clickable" onclick="showBreakdown('invdc',event)" title="Click for breakdown"><span class="stat-label">Inv DC ❓</span><div class="stat-value" id="invDC">—</div></div>
+        <div class="stat-box bd-clickable" onclick="showBreakdown('invatk',event)" title="Click for breakdown"><span class="stat-label">Inv Atk ❓</span><div class="stat-value" id="invAtk">—</div></div>
+        <div class="stat-box" id="boxSTR" style="display:none"><span class="stat-label">🛡 STR</span><div class="stat-value" id="armourSTR" style="color:var(--green)">—</div></div>
+      </div>
+
+      <!-- ARMOUR EFFECTS SUMMARY (shown when armoured) -->
+      <div class="panel" id="armourEffectsPanel" style="display:none">
+        <div class="panel-header" style="color:var(--green)">🛡 Active Armour Effects</div>
+        <div class="panel-body" id="armourEffectsList"></div>
+      </div>
+
+      <!-- HP -->
+      <div class="panel">
+        <div class="panel-header">Hit Points <span class="small">1d8/lvl + CON×13</span></div>
+        <div class="panel-body">
+          <div class="hp-display">
+            <input class="hp-current" id="hpCurrent" type="text" value="85" />
+            <span class="hp-sep">/</span>
+            <input class="hp-max" id="hpMax" type="text" value="85" />
+          </div>
+          <div class="hp-bar-track"><div class="hp-bar-fill" id="hpBar" style="width:100%"></div></div>
+          <div class="hp-buttons">
+            <input class="hp-input" id="hpChange" type="number" placeholder="±" />
+            <button class="btn btn-red" onclick="adjustHP(-1)">DMG</button>
+            <button class="btn btn-green" onclick="adjustHP(1)">HEAL</button>
+            <button class="btn btn-cyan" onclick="fullHeal()">FULL</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:7px;">
+            <span class="stat-label">TEMP HP</span>
+            <input style="width:54px;background:var(--navy);border:1px solid var(--cyan-dim);color:var(--cyan);
+              font-family:'Orbitron',monospace;font-size:15px;text-align:center;outline:none;padding:2px 4px;"
+              id="tempHP" type="text" value="0" onchange="saveData()" />
+          </div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+            <div class="stat-label" style="margin-bottom:5px">HIT DICE d8×13</div>
+            <div class="resource-pips" id="hitDicePips"></div>
+          </div>
+          <div style="margin-top:9px;padding-top:8px;border-top:1px solid var(--border)">
+            <div class="stat-label" style="margin-bottom:5px">DEATH SAVES</div>
+            <div class="death-saves">
+              <span class="save-label">SUCC</span>
+              <div class="save-dots">
+                <div class="save-dot success" onclick="this.classList.toggle('filled');saveData()"></div>
+                <div class="save-dot success" onclick="this.classList.toggle('filled');saveData()"></div>
+                <div class="save-dot success" onclick="this.classList.toggle('filled');saveData()"></div>
+              </div>
+              <span class="save-label">FAIL</span>
+              <div class="save-dots">
+                <div class="save-dot fail" onclick="this.classList.toggle('filled');saveData()"></div>
+                <div class="save-dot fail" onclick="this.classList.toggle('filled');saveData()"></div>
+                <div class="save-dot fail" onclick="this.classList.toggle('filled');saveData()"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATTACKS -->
+      <div class="panel">
+        <div class="panel-header">Attacks <button class="roll-btn" onclick="addAttack()">+ ADD</button></div>
+        <div class="panel-body">
+          <div class="attack-row header"><span>Name</span><span>Atk</span><span>Damage</span><span>Type</span><span></span></div>
+          <div id="attacksList"></div>
+        </div>
+      </div>
+
+      <!-- POTENT APTITUDE -->
+      <div class="panel">
+        <div class="panel-header">Potent Aptitude — d10 @ Lvl 13</div>
+        <div class="panel-body">
+          <div class="pa-die-display">d10 <button class="roll-btn" style="font-size:11px;margin-left:10px" onclick="rollDie(10,'Potent Aptitude')">ROLL</button></div>
+          <div style="margin-top:9px">
+            <div class="stat-label" style="margin-bottom:5px">USES — INT mod (short/long rest)</div>
+            <div class="resource-pips" id="paPips"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONDITIONS -->
+      <div class="panel">
+        <div class="panel-header">Conditions</div>
+        <div class="panel-body">
+          <div class="condition-grid" id="conditionGrid"></div>
+          <div style="margin-top:9px">
+            <div class="stat-label" style="margin-bottom:5px">EXHAUSTION</div>
+            <div style="display:flex;gap:4px;" id="exhaustionRow"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">Character Info</div>
+        <div class="panel-body" style="font-size:13px;line-height:2.1">
+          <div><span class="stat-label">NAME</span><input class="inline-edit" id="charName2" value="" placeholder="Character name" onchange="state.charName2=this.value;saveData()" /></div>
+          <div><span class="stat-label">RACE</span><input class="inline-edit" id="charRace" value="Rock Gnome" placeholder="Race" onchange="saveData()" /></div>
+          <div><span class="stat-label">BACKGROUND</span><input class="inline-edit" id="charBG" value="" placeholder="Background" onchange="saveData()" /></div>
+          <div><span class="stat-label">ALIGNMENT</span><input class="inline-edit" id="charAlign" value="" placeholder="Alignment" onchange="saveData()" /></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Passive Scores</div>
+        <div class="panel-body">
+          <div class="resource-row"><span class="resource-name">Passive Perception</span><span class="stat-value" id="passivePerc" style="font-size:15px">—</span></div>
+          <div class="resource-row"><span class="resource-name">Passive Investigation</span><span class="stat-value" id="passiveInv" style="font-size:15px">—</span></div>
+          <div class="resource-row"><span class="resource-name">Passive Insight</span><span class="stat-value" id="passiveIns" style="font-size:15px">—</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Proficiencies</div>
+        <div class="panel-body" style="font-size:11px;color:var(--parchment-dim);font-family:'Share Tech Mono',monospace;line-height:1.8">
+          <div style="color:var(--brass-dim);font-size:9px;letter-spacing:2px">ARMOUR</div> Light, Medium, Heavy, Shields
+          <div style="color:var(--brass-dim);font-size:9px;letter-spacing:2px;margin-top:5px">WEAPONS</div> Simple Weapons
+          <div style="color:var(--brass-dim);font-size:9px;letter-spacing:2px;margin-top:5px">TOOLS</div> Smith's, Thieves', Tinker's, Leatherworker's Tools + Artisan's Tools (racial)
+          <div style="color:var(--brass-dim);font-size:9px;letter-spacing:2px;margin-top:5px">DEFENCES</div> Intelligence + 1 Physical
+          <div style="color:var(--brass-dim);font-size:9px;letter-spacing:2px;margin-top:5px">LANGUAGES</div> Common, Gnomish
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header" style="color:var(--cyan)">🍄 Rock Gnome Traits</div>
+        <div class="panel-body" style="font-size:11px;color:var(--parchment-dim);font-family:'Share Tech Mono',monospace;line-height:1.9">
+          <div style="color:var(--cyan-dim);font-size:9px;letter-spacing:2px">SIZE &amp; SPEED</div>
+          Small &middot; 25 ft base
+          <div style="color:var(--cyan-dim);font-size:9px;letter-spacing:2px;margin-top:6px">DARKVISION</div>
+          60 ft <span id="darkvisionNote" style="color:var(--green)"></span>
+          <div style="color:var(--cyan-dim);font-size:9px;letter-spacing:2px;margin-top:6px">GNOME CUNNING</div>
+          Advantage on INT, WIS &amp; CHA saving throws against magic
+          <div style="color:var(--cyan-dim);font-size:9px;letter-spacing:2px;margin-top:6px">ARTIFICER'S LORE</div>
+          Double Prof bonus on History checks involving magic items, alchemical objects &amp; technological devices
+          <div style="color:var(--cyan-dim);font-size:9px;letter-spacing:2px;margin-top:6px">TINKER (racial)</div>
+          1 hr + 10 gp: construct a Tiny clockwork device (Toy, Fire Starter, or Music Box). Max 3 active. Lasts 24 hrs or until dismantled.
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">Resources</div>
+        <div class="panel-body">
+          <div class="resource-row">
+            <span class="resource-name">Tinker (Long Rest)</span>
+            <div class="resource-pips"><div class="resource-pip" onclick="this.classList.toggle('used');saveData()"></div></div>
+          </div>
+          <div class="resource-row">
+            <span class="resource-name">Mounted Weapon (maint)</span>
+            <div class="resource-pips" id="mountedPips"></div>
+          </div>
+          <div class="resource-row">
+            <span class="resource-name">Breakthrough 6th</span>
+            <div class="resource-pips"><div class="resource-pip" onclick="this.classList.toggle('used');saveData()"></div></div>
+          </div>
+          <div class="resource-row">
+            <span class="resource-name">Breakthrough 7th</span>
+            <div class="resource-pips"><div class="resource-pip" onclick="this.classList.toggle('used');saveData()"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">🧰 Maintenance Materials</div>
+        <div class="panel-body" id="maintMaterialsPanel"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">🔧 Maintenance Tracker</div>
+        <div class="panel-body" id="maintTrackerPanel"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LIBRARY TAB ===== -->
+<div class="page" id="tab-library">
+  <div class="grid-2">
+    <div>
+      <div class="panel">
+        <div class="panel-header">📚 Invention & Gadget Library</div>
+        <div class="panel-body">
+          <input class="lib-search" id="invSearch" placeholder="SEARCH INVENTIONS..." oninput="filterLibrary('inv')" />
+          <div class="lib-filters" id="invFilters"></div>
+          <div id="invLibraryList" style="max-height:600px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-header">🔩 Upgrade Library</div>
+        <div class="panel-body">
+          <input class="lib-search" id="upgSearch" placeholder="SEARCH UPGRADES..." oninput="filterLibrary('upg')" />
+          <div id="upgLibraryList" style="max-height:680px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOADOUT TAB ===== -->
+<div class="page" id="tab-loadout">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+    <div>
+      <div class="panel">
+        <div class="panel-header">⚔ Equipped Weapons <button class="roll-btn" onclick="addWeapon()">+ ADD</button></div>
+        <div class="panel-body" id="weaponSlotPanel"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">⚗ Equipped Gadgets (4 slots)</div>
+        <div class="panel-body" id="gadgetSlotPanel"></div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-header">🔧 Equipped Inventions (3 slots @ 5th level)</div>
+        <div class="panel-body">
+          <div style="font-size:11px;color:var(--parchment-dim);font-family:'Share Tech Mono',monospace;margin-bottom:9px">
+            Uses = INT mod + ½ Eng level (min 1). Recharge: 1hr maintenance + materials (50gp/level).
+          </div>
+          <div id="invSlotPanel"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">💥 Breakthrough Inventions</div>
+        <div class="panel-body">
+          <div style="font-size:11px;color:var(--parchment-dim);font-family:'Share Tech Mono',monospace;margin-bottom:9px">1 use each before maintenance. Recharge on maintenance.</div>
+          <div id="breakthroughPanel"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-header">🛡 Powered Armour Upgrades (<span id="upgradeCountLabel">0</span>/6)</div>
+        <div class="panel-body">
+          <div style="font-size:11px;color:var(--parchment-dim);font-family:'Share Tech Mono',monospace;margin-bottom:10px">
+            Long rest: replace/remove upgrades up to INT modifier. Select a slot to assign an upgrade from the library.
+          </div>
+          <div class="upgrade-slots-grid" id="upgradeSlotsGrid"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">✨ Active Effects Summary</div>
+        <div class="panel-body" id="activeEffectsSummary"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FEATURES TAB ===== -->
+<div class="page" id="tab-features">
+  <div class="grid-2">
+    <div>
+      <div class="section-title">Core Engineer Features</div>
+      <div id="coreFeaturesPanel"></div>
+    </div>
+    <div>
+      <div class="section-title">Armourer Discipline</div>
+      <div id="subclassFeaturesPanel"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NOTES TAB ===== -->
+<div class="page" id="tab-notes">
+  <div class="grid-2">
+    <div>
+      <div class="panel"><div class="panel-header">Combat Notes</div><div class="panel-body">
+        <textarea class="notes-area" id="combatNotes" rows="8" onchange="saveData()"></textarea>
+      </div></div>
+      <div class="panel"><div class="panel-header">Inventory</div><div class="panel-body">
+        <textarea class="notes-area" id="inventoryNotes" rows="10" onchange="saveData()"></textarea>
+      </div></div>
+    </div>
+    <div>
+      <div class="panel"><div class="panel-header">Backstory</div><div class="panel-body">
+        <textarea class="notes-area" id="backstoryNotes" rows="13" onchange="saveData()"></textarea>
+      </div></div>
+      <div class="panel"><div class="panel-header">Session Notes</div><div class="panel-body">
+        <textarea class="notes-area" id="sessionNotes" rows="8" onchange="saveData()"></textarea>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// IMMEDIATE DIAGNOSTIC — proves the <script> tag executed at all.
+// This runs synchronously, before anything else, with no dependencies.
+// ================================================================
+(function(){
+  try{
+    const diag=document.createElement('div');
+    diag.id='jsDiagBanner';
+    diag.style.cssText='position:fixed;top:0;left:0;right:0;background:#1a3a0a;color:#aaffaa;'+
+      'font-family:monospace;font-size:11px;padding:6px 10px;z-index:99999;text-align:center;';
+    diag.textContent='JS executing… (this banner should disappear once setup finishes)';
+    document.documentElement.appendChild(diag);
+  }catch(e){}
+})();
+
+// Fallback: if neither DOMContentLoaded nor our init() removes the banner
+// within 5 seconds, something is badly stuck — say so explicitly.
+setTimeout(function(){
+  const diag=document.getElementById('jsDiagBanner');
+  if(diag){
+    diag.style.background='#3a0a0a';
+    diag.style.color='#ffcccc';
+    diag.textContent='JS ran, but init() did not complete after 5s. Check for errors below.';
+  }
+},5000);
+
+
+// ================================================================
+// SAFE STORAGE SHIM
+// Some environments (file:// origin on iOS Safari, sandboxed iframes,
+// private browsing) throw on ANY access to window.localStorage, not just
+// .getItem/.setItem. We replace it with an in-memory fallback so the rest
+// of the app never has to think about this.
+// ================================================================
+(function(){
+  try{
+    const testKey='__storage_test__';
+    window.localStorage.setItem(testKey,'1');
+    window.localStorage.removeItem(testKey);
+  }catch(e){
+    const mem={};
+    const shim={
+      getItem:k=>(k in mem ? mem[k] : null),
+      setItem:(k,v)=>{mem[k]=String(v);},
+      removeItem:k=>{delete mem[k];},
+      clear:()=>{Object.keys(mem).forEach(k=>delete mem[k]);}
+    };
+    try{
+      Object.defineProperty(window,'localStorage',{value:shim,writable:false,configurable:true});
+    }catch(e2){
+      // If we can't even redefine it, make a global alias the rest of the
+      // app could use — but our code calls window.localStorage directly,
+      // so this is a last-ditch no-op fallback.
+      window.__localStorageShim = shim;
+    }
+  }
+})();
+
+// Surface any uncaught error visibly instead of a silently dead page
+window.addEventListener('error', function(e){
+  try{
+    let box = document.getElementById('fatalErrorBox');
+    if(!box){
+      box = document.createElement('div');
+      box.id='fatalErrorBox';
+      box.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#3a0a0a;color:#ffcccc;'+
+        'font-family:monospace;font-size:11px;padding:8px 12px;z-index:9999;border-top:2px solid #c84030;'+
+        'max-height:40vh;overflow:auto;white-space:pre-wrap;';
+      document.body.appendChild(box);
+    }
+    box.textContent += '\nError: '+e.message+' (line '+e.lineno+')';
+  }catch(e2){}
+});
+
+// ================================================================
+// FULL INVENTION DATABASE
+// ================================================================
+const INV_DB = [
+  // GADGETS (level 0)
+  {id:'acid_gel',name:'Acid Gel',level:0,type:'gadget',activation:'1 Action',range:'Varies',duration:'1 Round',
+    desc:'Melee attack as part of action. On hit: normal damage + target sheathed in acid slime. If target grapples before your next turn: 1d8 acid (scales: +1d8 at 5/11/17).'},
+  {id:'acid_splash',name:'Acid Splash',level:0,type:'gadget',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'DEX save or 1d6 acid. 1–2 targets within 5 ft of each other. Scales: +1d6 at 5/11/17.'},
+  {id:'acid_strike',name:'Acid Strike',level:0,type:'gadget',activation:'1 Action',range:'5 ft',duration:'Instant',
+    desc:'Melee invention attack: 1d10 acid damage. Scales: +1d10 at 5/11/17.'},
+  {id:'bonfire',name:'Bonfire',level:0,type:'gadget',activation:'1 Action',range:'Touch',duration:'1 Minute',
+    desc:'5-ft cube bonfire on ground you can see. Creatures entering or ending turn: DEX save or 1d8 fire. Scales: +1d8 at 5/11/17.'},
+  {id:'combustive_shot',name:'Combustive Shot',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Ranged weapon attack. On hit: normal damage + ignites. Start of next turn: fire dmg = INT mod (+1d4+INT mod at 5, scales). Scales at 5/11/17.'},
+  {id:'electroshock',name:'Electroshock',level:0,type:'gadget',activation:'1 Action',range:'Touch',duration:'Instant',
+    desc:'Melee invention attack (advantage vs metal armour). Hit: 1d8 lightning + can\'t take reactions until its next turn. Scales: +1d8 at 5/11/17.'},
+  {id:'firearm',name:'Firearm',level:0,type:'gadget',activation:'1 Action',range:'120 ft',duration:'Instant',
+    desc:'Ranged invention attack: 1d10 fire. Ignites flammable objects. Scales: +1d10 at 5/11/17.'},
+  {id:'grappling_cable',name:'Grappling Cable',level:0,type:'gadget',activation:'1 Action',range:'30 ft',duration:'Instant',
+    desc:'Melee invention attack: 1d6 piercing. Large-or-smaller target pulled up to 10 ft closer. Scales: +1d6 at 5/11/17.'},
+  {id:'icy_burst',name:'Icy Burst',level:0,type:'gadget',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'Ranged invention attack: 1d8 cold + speed -10 ft until start of your next turn. Scales: +1d8 at 5/11/17.'},
+  {id:'jet_of_flame',name:'Jet of Flame',level:0,type:'gadget',activation:'1 Action',range:'Self/30 ft',duration:'10 Min',
+    desc:'Flickering flame in hand for 10 min (or hurl): ranged inv attack, 1d8 fire. Scales: +1d8 at 5/11/17.'},
+  {id:'light',name:'Light',level:0,type:'gadget',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'Object sheds bright light 20-ft radius, dim 20 ft. Toggle as action.'},
+  {id:'mending',name:'Mending',level:0,type:'gadget',activation:'1 Minute',range:'Touch',duration:'Instant',
+    desc:'Repair one break/tear ≤1 ft in any dimension.'},
+  {id:'poison_spray',name:'Poison Spray',level:0,type:'gadget',activation:'1 Action',range:'10 ft',duration:'Instant',
+    desc:'CON save or 1d12 poison. Scales: +1d12 at 5/11/17.'},
+  {id:'rime_shot',name:'Rime Shot',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Ranged weapon attack. Hit: normal damage + speed halved until end of its turn. +1d6 cold at 5/11/17.'},
+  {id:'rime_strike',name:'Rime Strike',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Melee weapon attack. Hit: normal + speed -10 ft. If target doesn\'t move 5 ft by your next turn: 1d8 cold. Scales at 5/11/17.'},
+  {id:'shocking_blast',name:'Shocking Blast',level:0,type:'gadget',activation:'1 Action',range:'30 ft',duration:'Instant',
+    desc:'1–2 targets within 5 ft each other: DEX save or 1d6 lightning (constructs disadvantage). Scales: +1d6 at 5/11/17.'},
+  {id:'shocking_burst',name:'Shocking Burst',level:0,type:'gadget',activation:'1 Action',range:'5-ft sphere',duration:'Instant',
+    desc:'All creatures in range (not you): CON save or 1d6 lightning. Scales: +1d6 at 5/11/17.'},
+  {id:'shocking_strike',name:'Shocking Strike',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Melee weapon attack. Hit: normal + electrical discharge. If target takes a reaction before your next turn: 1d8 lightning. Scales at 5/11/17.'},
+  {id:'slingshot',name:'Slingshot',level:0,type:'gadget',activation:'1 Bonus Action',range:'60 ft',duration:'1 Min',
+    desc:'Ranged inv attack with pebble: 1d6 + INT mod bludgeoning.'},
+  {id:'sonic_shot',name:'Sonic Shot',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Ranged weapon attack. Hit: normal + sonic barrier. If target moves before your next turn: INT mod thunder damage. Scales at 5/11/17.'},
+  {id:'sonic_strike',name:'Sonic Strike',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Melee weapon attack. Hit: normal + disturbing hum. Hostile creatures ending turn within 5 ft: 1d4 thunder. Scales at 5/11/17.'},
+  {id:'sonic_wave',name:'Sonic Wave',level:0,type:'gadget',activation:'1 Action',range:'5 ft',duration:'Instant',
+    desc:'All creatures in 5 ft (not you): CON save or 1d6 thunder (heard 100 ft). Scales: +1d6 at 5/11/17.'},
+  {id:'storm_shot',name:'Storm Shot',level:0,type:'gadget',activation:'1 Action',range:'Weapon',duration:'1 Round',
+    desc:'Ranged weapon attack. Hit: normal + lightning rod debuff. If another lightning-rod creature within 30 ft: arc discharges 1d6 each. Scales at 5/11/17.'},
+  // LEVEL 1
+  {id:'ablative_armour',name:'Ablative Armour',level:1,type:'invention',activation:'1 Reaction (when hit)',range:'Self',duration:'1 Round',
+    desc:'+5 AC until start of your next turn (includes triggering attack).'},
+  {id:'absorb_energy',name:'Absorb Energy',level:1,type:'invention',activation:'1 Reaction (damage)',range:'Self',duration:'1 Round',
+    desc:'Resistance to triggering damage type until your next turn. First melee attack next turn deals +1d6 of that type. +1d6 per slot above 1st.'},
+  {id:'alarm',name:'Alarm',level:1,type:'invention',activation:'1 Minute',range:'30 ft',duration:'8 Hours',
+    desc:'Alarm on door/window/20-ft cube. Hand-bell sound when Tiny+ creature enters. You designate who doesn\'t trigger it.'},
+  {id:'arc_bolt',name:'Arc Bolt',level:1,type:'invention',activation:'1 Action',range:'30 ft',duration:'1 Minute',
+    desc:'Ranged inv attack: 1d12 lightning. Sustain with action each turn. +1d12 per slot above 1st.'},
+  {id:'catapult',name:'Catapult',level:1,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'Object 1–5 lbs flies 90 ft. DEX save if creature struck: 3d8 bludgeoning. +5 lbs & +1d8 per slot.'},
+  {id:'ensnaring_strike',name:'Ensnaring Strike',level:1,type:'invention',activation:'1 Bonus Action',range:'Self',duration:'1 Minute',
+    desc:'Next weapon attack: STR save or target restrained, 1d6 piercing/turn. +1d6 per slot above 1st.'},
+  {id:'expeditious_retreat',name:'Expeditious Retreat',level:1,type:'invention',activation:'1 Bonus Action',range:'Self',duration:'10 Minutes',
+    desc:'Bonus action Dash on each turn for duration.'},
+  {id:'flame_sweep',name:'Flame Sweep',level:1,type:'invention',activation:'1 Action',range:'15-ft cone',duration:'Instant',
+    desc:'DEX save or 3d6 fire (half on success). +1d6 per slot above 1st.'},
+  {id:'flash',name:'Flash',level:1,type:'invention',activation:'1 Action',range:'Self (15-ft cone)',duration:'1 Round',
+    desc:'Roll 6d10: total HP of creatures affected (ascending HP). Affected creatures blinded until end of your next turn. +2d10 per slot above 1st.'},
+  {id:'gleaming_outline',name:'Gleaming Outline',level:1,type:'invention',activation:'1 Action',range:'60 ft',duration:'1 Minute',
+    desc:'Objects/failed DEX save creatures in 20-ft cube outlined in light. Attacks vs affected have advantage; can\'t benefit from invisibility.'},
+  {id:'heavy_cannon',name:'Heavy Cannon',level:1,type:'invention',activation:'1 Action',range:'120 ft',duration:'Instant',
+    desc:'Ranged inv attack: 2d8 fire + 1d6 bludgeoning. Matching d8s: blast jumps to nearest creature within 30 ft. +1d6 fire per slot above 1st.'},
+  {id:'icy_blast',name:'Icy Blast',level:1,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'Ranged inv attack: 1d10 piercing. Then 5-ft explosion: DEX save or 2d6 cold. +1d6 cold per slot above 1st.'},
+  {id:'knockout_gas',name:'Knockout Gas',level:1,type:'invention',activation:'1 Action',range:'90 ft',duration:'1 Minute',
+    desc:'Roll 5d8 HP worth of sleeping creatures in 20-ft radius (ascending HP). Wake on damage or action. +2d8 per slot above 1st.'},
+  {id:'laughing_gas',name:'Laughing Gas',level:1,type:'invention',activation:'1 Action',range:'30 ft',duration:'1 Minute',
+    desc:'WIS save or prone, incapacitated, can\'t stand. Re-save end of each turn or on taking damage.'},
+  {id:'light_cannon',name:'Light Cannon',level:1,type:'invention',activation:'1 Action',range:'90 ft',duration:'Instant',
+    desc:'Ranged inv attack: 2d8 bludgeoning + 1d8 fire. +1d8 fire per slot above 1st.'},
+  {id:'net_launcher',name:'Net Launcher',level:1,type:'invention',activation:'1 Action',range:'90 ft',duration:'1 Minute',
+    desc:'20-ft square net: difficult terrain. Creatures in area: STR save or restrained.'},
+  {id:'noxious_fumes',name:'Noxious Fumes',level:1,type:'invention',activation:'1 Action',range:'5 ft',duration:'Instant',
+    desc:'CON save: fail = 2d8 poison + poisoned; success = half, not poisoned. +1d8 per slot above 1st.'},
+  {id:'oil_slick',name:'Oil Slick',level:1,type:'invention',activation:'1 Action',range:'60 ft',duration:'1 Minute',
+    desc:'10-ft square oil: difficult terrain, DEX save or prone. Flammable: fire contact = 3d6 fire.'},
+  {id:'overload',name:'Overload',level:1,type:'invention',activation:'1 Action',range:'15-ft cube',duration:'Instant',
+    desc:'DEX save: fail = 2d8 lightning + pushed 10 ft; success = half, not pushed. +1d8 per slot above 1st.'},
+  {id:'parachute',name:'Parachute',level:1,type:'invention',activation:'1 Reaction (fall)',range:'Self',duration:'1 Minute',
+    desc:'Fall rate slows to 60 ft/round. Land safely with no fall damage.'},
+  {id:'repair_construct',name:'Repair Construct',level:1,type:'invention',activation:'1 Action',range:'Touch',duration:'Instant',
+    desc:'Construct regains 1d8 + INT mod HP. +1d8 per slot above 1st.'},
+  {id:'ring_of_fire',name:'Ring of Fire',level:1,type:'invention',activation:'1 Action',range:'Self (15-ft ring)',duration:'1 Minute',
+    desc:'Ring of fire (radius 15 ft, height 10 ft). Start of turn or pass through: 1d6 fire. Creatures must succeed WIS save to willingly exit. +1d6 per slot above 1st.'},
+  {id:'rocket_boots',name:'Rocket Boots',level:1,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Minute',
+    desc:'Target\'s jump distance tripled.'},
+  {id:'rocket_pod',name:'Rocket Pod',level:1,type:'invention',activation:'1 Action',range:'120 ft',duration:'Instant',
+    desc:'3 explosives, each 1d4+1 fire to targets you choose. +1 explosive per slot above 1st.'},
+  {id:'scatter_shot',name:'Scatter Shot',level:1,type:'invention',activation:'1 Bonus Action',range:'Self',duration:'1 Minute',
+    desc:'Next ranged weapon attack: target + all within 5 ft make DEX save or 1d10 piercing. +1d10 per slot above 1st.'},
+  {id:'smoke_bomb',name:'Smoke Bomb',level:1,type:'invention',activation:'1 Action',range:'120 ft',duration:'1 Hour',
+    desc:'20-ft radius heavily obscured sphere of smoke. Wind of 10+ mph disperses it. +20 ft radius per slot above 1st.'},
+  {id:'snap_shot',name:'Snap Shot',level:1,type:'invention',activation:'1 Reaction (damaged)',range:'60 ft',duration:'Instant',
+    desc:'DEX save or 2d10 fire. +1d10 per slot above 1st.'},
+  {id:'snare',name:'Snare',level:1,type:'invention',activation:'1 Minute',range:'Touch',duration:'8 Hours',
+    desc:'Nearly invisible snare (5-ft circle). Small/Med/Large creature: DEX save or hoisted 3 ft upside-down, restrained.'},
+  {id:'spring_stilts',name:'Spring Stilts',level:1,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'Target speed +10 ft for 1 hour.'},
+  // LEVEL 2
+  {id:'acid_dart',name:'Acid Dart',level:2,type:'invention',activation:'1 Action',range:'90 ft',duration:'Instant',
+    desc:'Ranged inv attack: 4d4 acid + 2d4 acid at end of next turn (miss: half initial only). +1d4 each per slot above 2nd.'},
+  {id:'caltrops',name:'Caltrops',level:2,type:'invention',activation:'1 Action',range:'150 ft',duration:'1 Hour',
+    desc:'20-ft radius caltrops: difficult terrain, 2d4 piercing per 5 ft moved. Nearly invisible (Perception check to spot).'},
+  {id:'drill',name:'Drill',level:2,type:'invention',activation:'1 Action',range:'Touch',duration:'Instant',
+    desc:'Unlock/unbar one door/chest/lock. Suppresses arcane lock 10 min.'},
+  {id:'flashbang',name:'Flashbang',level:2,type:'invention',activation:'1 Action',range:'30 ft',duration:'1 Minute',
+    desc:'CON save or blinded/deafened (random) for 1 min. Re-save end of each turn. +1 target per slot above 2nd.'},
+  {id:'gecko_boots',name:'Gecko Boots',level:2,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'Target gains climbing speed = walking speed, can traverse vertical surfaces and ceilings hands-free.'},
+  {id:'icy_volley',name:'Icy Volley',level:2,type:'invention',activation:'1 Action',range:'90 ft',duration:'Instant',
+    desc:'5-ft-radius explosion: DEX save or 3d6 cold + speed -10 ft until start of your next turn. +1d6 per slot above 2nd.'},
+  {id:'incendiary_bolts',name:'Incendiary Bolts',level:2,type:'invention',activation:'1 Action',range:'120 ft',duration:'Instant',
+    desc:'3 rays of fire: ranged inv attack each, 2d6 fire on hit. +1 ray per slot above 2nd.'},
+  {id:'lock',name:'Lock',level:2,type:'invention',activation:'1 Action',range:'Touch',duration:'Until Removed',
+    desc:'Lock one door/window/chest. DC to break or pick +10.'},
+  {id:'magnetic_field',name:'Magnetic Field',level:2,type:'invention',activation:'1 Action',range:'Self (10-ft radius)',duration:'1 Hour',
+    desc:'10-ft radius around you: difficult terrain, ranged weapon attacks in/out have disadvantage.'},
+  {id:'mesh_trap',name:'Mesh Trap',level:2,type:'invention',activation:'1 Action',range:'60 ft',duration:'1 Hour',
+    desc:'20-ft cube of adhesive mesh: difficult terrain, lightly obscures. Creatures: DEX save or restrained. Flammable.'},
+  {id:'napalm_blade',name:'Napalm Blade',level:2,type:'invention',activation:'1 Bonus Action',range:'Self',duration:'10 Minutes',
+    desc:'Coat a blade in napalm. Melee inv attack action: 3d6 fire, sheds bright/dim light. +1d6 at 4th level.'},
+  {id:'napalm_jet',name:'Napalm Jet',level:2,type:'invention',activation:'1 Action',range:'30-ft line',duration:'Instant',
+    desc:'30-ft × 5-ft line: DEX save or 3d8 fire (half on success). +1d8 per slot above 2nd.'},
+  {id:'night_vision',name:'Night Vision',level:2,type:'invention',activation:'1 Action',range:'Touch',duration:'8 Hours',
+    desc:'Target gains 60-ft darkvision for 8 hours.'},
+  {id:'paralyse_person',name:'Paralyse Person',level:2,type:'invention',activation:'1 Action',range:'60 ft',duration:'1 Minute',
+    desc:'CON save or poisoned (and paralysed). Re-save end of each turn. +1 target per slot above 2nd.'},
+  {id:'pyrotechnics',name:'Pyrotechnics',level:2,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'Extinguish a 5-ft fire cube: either fireworks (10-ft radius, CON save or blinded 1 round) or smoke (20-ft radius heavily obscured, 1 min).'},
+  {id:'repeater',name:'Repeater',level:2,type:'invention',activation:'1 Bonus Action',range:'Touch',duration:'1 Minute',
+    desc:'Weapon uses no ammo for 1 min. Bonus action extra attack each turn. +1 extra at 5th level.'},
+  {id:'shatter',name:'Shatter',level:2,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'10-ft radius sphere: CON save or 3d8 thunder (disadvantage for stone/crystal/metal creatures). +1d8 per slot above 2nd.'},
+  // LEVEL 3
+  {id:'arc_blast',name:'Arc Blast',level:3,type:'invention',activation:'1 Bonus Action',range:'Self',duration:'1 Minute',
+    desc:'Next ranged attack: 4d8 lightning on hit (or half on miss) instead of normal damage. Creatures within 10 ft of target: DEX save or 2d8 lightning. +1d8 per slot above 3rd.'},
+  {id:'barrage',name:'Barrage',level:3,type:'invention',activation:'1 Action',range:'60-ft cone',duration:'Instant',
+    desc:'DEX save or 3d8 damage (same type as weapon/ammo used, half on success).'},
+  {id:'debilitating_gas',name:'Debilitating Gas',level:3,type:'invention',activation:'1 Action',range:'90 ft',duration:'1 Minute',
+    desc:'20-ft radius sphere. Creatures fully inside at start of turn: CON save or do nothing that turn.'},
+  {id:'discharge_bolt',name:'Discharge Bolt',level:3,type:'invention',activation:'1 Action',range:'100-ft line',duration:'Instant',
+    desc:'100-ft × 5-ft line: DEX save or 8d6 lightning (half on success). Ignites flammables. +1d6 per slot above 3rd.'},
+  {id:'flaming_shots',name:'Flaming Shots',level:3,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'Attach to ranged weapon: +1d6 fire per hit for 12 shots. +2 shots per slot above 3rd.'},
+  {id:'floodlight',name:'Floodlight',level:3,type:'invention',activation:'1 Action',range:'60 ft',duration:'1 Hour',
+    desc:'60-ft radius bright light, +60 ft dim. Dispels magical darkness of 3rd level or lower.'},
+  {id:'freeze_ray',name:'Freeze Ray',level:3,type:'invention',activation:'1 Action',range:'40-ft cube',duration:'1 Minute',
+    desc:'Up to 6 creatures: DEX save or speed halved, -2 AC & DEX saves, no reactions, max 1 attack/turn. Re-save end of each turn.'},
+  {id:'landmine',name:'Landmine',level:3,type:'invention',activation:'1 Action',range:'150 ft',duration:'Instant',
+    desc:'20-ft cube: DEX save or 3d12 bludgeoning (half on success). Area becomes difficult terrain. +1d12 per slot above 3rd.'},
+  {id:'mortar',name:'Mortar',level:3,type:'invention',activation:'1 Action',range:'120 ft',duration:'Instant',
+    desc:'20-ft radius sphere: DEX save or 8d6 fire (half on success). Ignites unattended objects. +1d6 per slot above 3rd.'},
+  {id:'protection_from_energy',name:'Protection from Energy',level:3,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'Willing creature: resistance to one energy type (acid/cold/fire/lightning/thunder).'},
+  {id:'sabotage_charges',name:'Sabotage Charges',level:3,type:'invention',activation:'1 Action',range:'120 ft',duration:'10 Minutes',
+    desc:'6 charges: action + bonus action (2 each). Each explodes: DEX save or 2d6 fire (half on success). +2 charges per slot above 3rd.'},
+  {id:'scuba_gear',name:'Scuba Gear',level:3,type:'invention',activation:'1 Action',range:'Touch',duration:'24 Hours',
+    desc:'Up to 10 willing creatures can breathe underwater (retain normal respiration too).'},
+  {id:'stimulant',name:'Stimulant',level:3,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Minute',
+    desc:'Speed doubled, +2 AC, advantage DEX saves, extra action (Attack/Dash/Disengage/Hide/Use Object only). Lethargic after.'},
+  {id:'trap',name:'Trap',level:3,type:'invention',activation:'1 Hour',range:'Touch',duration:'Until triggered',
+    desc:'Conceal explosive (5d8 energy) or stored invention (≤3rd level) on a surface. Nearly invisible. Custom trigger condition.'},
+  {id:'upgrade_weapon',name:'Upgrade Weapon',level:3,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'+1 atk rolls + 1d4 chosen energy (acid/cold/fire/lightning). At 5th level: +2 atk, 2d4 damage.'},
+  // LEVEL 4
+  {id:'alpha_radiation',name:'Alpha Radiation',level:4,type:'invention',activation:'1 Action',range:'120 ft',duration:'10 Minutes',
+    desc:'30-ft radius dim green light. Creatures entering area: CON save or 4d10 radiant + 1 exhaustion level + emit green glow (no invisibility).'},
+  {id:'ballistic_armour',name:'Ballistic Armour',level:4,type:'invention',activation:'1 Action',range:'Touch',duration:'1 Hour',
+    desc:'Target: resistance to nonmagical bludgeoning, piercing, slashing.'},
+  {id:'corrosive_sphere',name:'Corrosive Sphere',level:4,type:'invention',activation:'1 Action',range:'150 ft',duration:'Instant',
+    desc:'20-ft radius: DEX save or 10d4 acid + 5d4 acid end of next turn (half initial only on success). +2d4 at 5th level.'},
+  {id:'curtain_of_napalm',name:'Curtain of Napalm',level:4,type:'invention',activation:'1 Action',range:'120 ft',duration:'1 Minute',
+    desc:'Wall of fire: 60 ft long/20 ft high or 20-ft diameter ring. 5d8 fire on creation (DEX save half). One side deals 5d8 fire to creatures ending turn within 10 ft. +1d8 at 5th level.'},
+  {id:'elemental_accelerant',name:'Elemental Accelerant',level:4,type:'invention',activation:'1 Action',range:'90 ft',duration:'1 Minute',
+    desc:'One creature: CON save or first damage of chosen type each turn deals +2d6 extra. Loses resistance to that type. +1 target at 5th level.'},
+  {id:'fabricate',name:'Fabricate',level:4,type:'invention',activation:'10 Minutes',range:'Touch',duration:'Instant',
+    desc:'Convert raw materials into products (same material). Up to Large/8 connected 5-ft cubes. Medium if metal/stone. Requires tool proficiency for complex items.'},
+  {id:'ice_storm',name:'Ice Storm',level:4,type:'invention',activation:'1 Action',range:'120 ft',duration:'Instant',
+    desc:'20-ft radius, 40-ft cylinder: DEX save or 2d8 bludgeoning + 4d6 cold (half on success). Area difficult terrain. +1d8 bludgeoning at 5th level.'},
+  {id:'sickening_radiation',name:'Sickening Radiation',level:4,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'3 points: 10-ft radius each. DEX save or 3d6 fire + 3d6 bludgeoning (half on success). Ignites objects.'},
+  // LEVEL 5
+  {id:'contagion',name:'Contagion',level:5,type:'invention',activation:'1 Action',range:'Touch',duration:'7 Days',
+    desc:'Melee inv attack. Hit: target poisoned. 3 failed CON saves = disease (Blinding Sickness/Filth Fever/Flesh Rot/Mindfire/Seizure/Slimy Doom). 3 successes = ends.'},
+  {id:'cryogenic_spray',name:'Cryogenic Spray',level:5,type:'invention',activation:'1 Action',range:'60-ft cone',duration:'Instant',
+    desc:'CON save or 8d8 cold (half on success). Creatures killed become frozen statues until thawed.'},
+  {id:'dig_tunnel',name:'Dig Tunnel',level:5,type:'invention',activation:'1 Action',range:'30 ft',duration:'1 Hour',
+    desc:'Open a passage (5×8×20 ft) through wood/plaster/stone. No structural instability.'},
+  {id:'immolate',name:'Immolate',level:5,type:'invention',activation:'1 Action',range:'90 ft',duration:'Instant',
+    desc:'DEX save or 8d6 fire + burns (shedding bright 30-ft / dim 30-ft light). Burning: 4d6 fire/turn (re-save). Nonmagical flame. Ash on death.'},
+  {id:'paralyse_creature',name:'Paralyse Creature',level:5,type:'invention',activation:'1 Action',range:'90 ft',duration:'1 Minute',
+    desc:'CON save or paralysed. No effect on undead. Re-save end of each turn.'},
+  {id:'toxic_cloud',name:'Toxic Cloud',level:5,type:'invention',activation:'1 Action',range:'120 ft',duration:'10 Minutes',
+    desc:'20-ft radius sphere of poisonous fog (heavily obscured). Enter/start turn: CON save or 5d8 poison (half on success). Moves 10 ft from you each turn.'},
+  {id:'volley',name:'Volley',level:5,type:'invention',activation:'1 Action',range:'150 ft',duration:'Instant',
+    desc:'40-ft radius, 20-ft cylinder: DEX save or 8d8 damage (type = weapon/ammo, half on success).'},
+  // LEVEL 6
+  {id:'chain_lightning',name:'Chain Lightning',level:6,type:'invention',activation:'1 Action',range:'150 ft',duration:'Instant',
+    desc:'One primary + 3 secondary targets within 30 ft of it. Each: DEX save or 10d8 lightning (half on success). Only 1 bolt per target.'},
+  {id:'cryogenic_orb',name:'Cryogenic Orb',level:6,type:'invention',activation:'1 Action',range:'300 ft',duration:'Instant',
+    desc:'60-ft radius sphere: CON save or 10d6 cold (half on success). Freezes water 6 inches deep/30 ft square. Can be stored as small globe.'},
+  {id:'disintegrate',name:'Disintegrate',level:6,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'DEX save or 10d6+40 acid. Reduced to 0 HP = disintegrated (ash, no revive). Auto-disintegrates Large-or-smaller objects; 10-ft cube of larger objects.'},
+  {id:'entrench',name:'Entrench',level:6,type:'invention',activation:'10 Minutes',range:'Touch',duration:'24 Hours',
+    desc:'Fortify 2,500 sq ft: fog in corridors, lock all doors, mesh on stairs, debilitating gas in 2 locations. Permanent with daily use for 1 year.'},
+  {id:'pathogen',name:'Pathogen',level:6,type:'invention',activation:'1 Action',range:'60 ft',duration:'Instant',
+    desc:'CON save or 14d6 necrotic (half on success). Can\'t reduce HP below 1. On failure: max HP reduced by damage for 1 hour.'},
+  {id:'uv_beam',name:'UV Beam',level:6,type:'invention',activation:'1 Action',range:'60-ft line',duration:'1 Minute',
+    desc:'5-ft × 60-ft line: CON save or 6d8 radiant + blinded until your next turn (half damage, not blinded on success).'},
+
+  // LEVEL 7
+  {id:'delayed_explosion',name:'Delayed Explosion',level:7,type:'invention',activation:'1 Action',range:'150 ft',duration:'1 Minute',
+    desc:'Create a delayed explosion at a point. When you end the effect, it detonates: DEX save or fire damage in a 20-ft radius sphere. Base damage 12d6; if the explosion hasn\'t gone off by end of your turn, damage increases by 1d6. If touched before detonating: DEX save or triggers immediately. Fire spreads around corners, ignites unattended flammables.'},
+  {id:'neurotoxin',name:'Neurotoxin',level:7,type:'invention',activation:'1 Bonus Action',range:'30 ft',duration:'Instant',
+    desc:'Release neurotoxin darts at any number of creatures you can see within range. Each makes a CON save. On failure, effects based on current HP: ≤60 HP = poisoned 1 min; ≤50 HP = also deafened 1 min; ≤40 HP = also blinded 10 min; ≤30 HP = also stunned 1 hr; ≤20 HP = killed instantly.'},
+  {id:'phosphorous_airburst',name:'Phosphorous Airburst',level:7,type:'invention',activation:'1 Action',range:'150 ft',duration:'Instant',
+    desc:'A cloud of burning phosphorous appears in up to ten 10-ft cubes of your arrangement (each cube adjacent to another). Each creature in the area: DEX save or 7d10 fire (half on success). Damages objects, ignites flammables not worn or carried.'},
+  {id:'sabot_rounds',name:'Sabot Rounds',level:7,type:'invention',activation:'1 Action',range:'Self',duration:'10 Minutes',
+    desc:'Load 7 sabot rounds. Bonus action: fire one at a creature or object within 120 ft — make a ranged invention attack. On hit: 2d12 piercing + 2d12 fire. Hit or miss, round is expended. Effect ends when last round is expended.'},
+];
+// ================================================================
+// UPGRADE DATABASE
+// ================================================================
+const UPG_DB = [
+  {id:'accelerated_movement',name:'Accelerated Movement',prereq:'',
+    desc:'Ignore Strength requirement. Armour -15 lbs. Speed +10 ft for all movement speeds.',
+    statEffects:[{type:'speed',value:10}]},
+  {id:'adaptable_armour',name:'Adaptable Armour',prereq:'',
+    desc:'Gain climbing speed = walking speed. Move on vertical surfaces and ceilings hands-free.',
+    statEffects:[{type:'note',value:'Climbing speed = walking speed'}]},
+  {id:'advanced_power_fist',name:'Advanced Power Fist',prereq:'11th level, Prototype Power Fist',
+    desc:'Unarmed strike deals 1d8 bludgeoning. Critical hit on 19–20.',
+    statEffects:[{type:'note',value:'Unarmed: 1d8 bludgeoning, crit 19–20'}]},
+  {id:'bulwark',name:'Bulwark',prereq:'',
+    desc:'Bonus action: anchor for three-quarters cover. Cannot move while anchored. Unanchor as bonus action.',
+    statEffects:[{type:'note',value:'Bonus action: anchor for ¾ cover'}]},
+  {id:'cannon_mount',name:'Cannon Mount',prereq:'',
+    desc:'Mounted cannon (2 uses). Action: use heavy cannon invention (1 use per level). Recharge on maintenance. Can be taken twice.',
+    statEffects:[{type:'note',value:'Action: Heavy Cannon (2 uses, recharge on maint.)'}]},
+  {id:'capacitor_discharge',name:'Capacitor Discharge',prereq:'',
+    desc:'Reaction: when enemy misses you with melee attack, deal 1d4 + INT mod lightning to them.',
+    statEffects:[{type:'note',value:'Reaction on missed melee: 1d4+INT lightning'}]},
+  {id:'darkvision_visor',name:'Darkvision Visor',prereq:'',
+    desc:'Darkvision 60 ft. If you already have darkvision, +60 ft range.',
+    statEffects:[{type:'note',value:'Darkvision 60 ft (or +60 ft)'}]},
+  {id:'enhanced_endurance',name:'Enhanced Endurance',prereq:'',
+    desc:'Once per maintenance: when reduced to 0 HP but not killed outright, drop to 1 HP instead.',
+    statEffects:[{type:'note',value:'Once per maint.: drop to 1 HP instead of 0'}]},
+  {id:'enhanced_strength',name:'Enhanced Strength',prereq:'5th level',
+    desc:'STR becomes 18 while wearing armour (no effect if already 18+).',
+    statEffects:[{type:'str_override',value:18}]},
+  {id:'hardened_overlay',name:'Hardened Overlay',prereq:'5th level',
+    desc:'+1 AC. +2 at 11th level, +3 at 17th level. (You are Lvl 13: +2 AC)',
+    statEffects:[{type:'ac',value:2}]},
+  {id:'harpoon',name:'Harpoon',prereq:'',
+    desc:'Ranged weapon attack 30/60: 1d6 piercing. Impales. Bonus action: reel in. Reload as action. Once per reload.',
+    statEffects:[{type:'note',value:'Ranged attack 30/60: 1d6 piercing, impales'}]},
+  {id:'heavy_suit',name:'Heavy Suit',prereq:'5th level',
+    desc:'Bonus action: anchor feet. Speed = 0, advantage on STR checks/saves, count as one size larger.',
+    statEffects:[{type:'note',value:'Bonus action: anchor (speed 0, adv. STR, size+1)'}]},
+  {id:'power_fist',name:'Power Fist',prereq:'',
+    desc:'Unarmed strike: melee inv attack 1d4 bludgeoning. When you Attack + unarmed, bonus action extra unarmed.',
+    statEffects:[{type:'note',value:'Unarmed: 1d4 bludgeoning inv attack; bonus unarmed on Attack'}]},
+  {id:'prototype_power_fist',name:'Prototype Power Fist',prereq:'7th level, Power Fist',
+    desc:'Unarmed strike 1d6 bludgeoning. After 10+ ft straight-line movement: first unarmed attack +STR mod extra damage.',
+    statEffects:[{type:'note',value:'Unarmed: 1d6; +STR mod after 10-ft charge'}]},
+  {id:'reactive_servos',name:'Reactive Servos',prereq:'',
+    desc:'Bonus action: gain 1d4 + INT mod temp HP for 1 hour. Uses = INT mod. Recharge on maintenance.',
+    statEffects:[{type:'note',value:'Bonus action: 1d4+INT temp HP (INT mod uses)'}]},
+  {id:'resistance_acid',name:'Resistance (Acid)',prereq:'',
+    desc:'Resistance to acid damage while wearing armour.',
+    statEffects:[{type:'resistance',value:'Acid'}]},
+  {id:'resistance_cold',name:'Resistance (Cold)',prereq:'',
+    desc:'Resistance to cold damage while wearing armour.',
+    statEffects:[{type:'resistance',value:'Cold'}]},
+  {id:'resistance_fire',name:'Resistance (Fire)',prereq:'',
+    desc:'Resistance to fire damage while wearing armour.',
+    statEffects:[{type:'resistance',value:'Fire'}]},
+  {id:'resistance_lightning',name:'Resistance (Lightning)',prereq:'',
+    desc:'Resistance to lightning damage while wearing armour.',
+    statEffects:[{type:'resistance',value:'Lightning'}]},
+  {id:'resistance_thunder',name:'Resistance (Thunder)',prereq:'',
+    desc:'Resistance to thunder damage while wearing armour.',
+    statEffects:[{type:'resistance',value:'Thunder'}]},
+  {id:'rocket_boots',name:'Rocket Boots',prereq:'',
+    desc:'Integrated rockets (2 uses). Action: use rocket boots invention (1 use). Recharge on maintenance. Can be taken twice.',
+    statEffects:[{type:'note',value:'Action: Rocket Boots (2 uses, recharge on maint.)'}]},
+  {id:'sealed_suit',name:'Sealed Suit',prereq:'5th level',
+    desc:'Bonus action: seal armour (1-hr air supply, poison immunity while sealed). Adapted to cold/hot climates and high altitude.',
+    statEffects:[{type:'note',value:'Bonus action: seal (1-hr air, poison immune, climate adapt)'}]},
+  {id:'shock_absorbing_underlay',name:'Shock-Absorbing Underlay',prereq:'5th level',
+    desc:'+1 physical saving throws. +2 at 11th level, +3 at 17th level. (Lvl 13: +2 physical saves)',
+    statEffects:[{type:'phys_saves',value:2}]},
+  {id:'steam_blast',name:'Steam Blast',prereq:'',
+    desc:'Action: creatures within 5 ft (Large-or-smaller) make DEX or STR save (their choice). Fail: pushed 5 ft, knocked prone. Uses = INT mod, recharge on maintenance.',
+    statEffects:[{type:'note',value:'Action: steam push 5 ft + prone (INT mod uses)'}]},
+  {id:'weapon_integration',name:'Weapon Integration',prereq:'',
+    desc:'Integrate one non-two-handed weapon into armour. Advantage on STR saves to avoid disarm.',
+    statEffects:[{type:'note',value:'Adv. on STR saves vs disarm; integrated weapon'}]},
+];
+
+// ================================================================
+// FEATURES
+// ================================================================
+const CORE_FEATURES = [
+  {name:'Inventor',desc:'4 gadgets (at-will, no uses). 3 inventions of 5th level. Invention uses = INT mod + ½ Eng level (min 1). Maintenance (1hr + tools + materials) resets uses.'},
+  {name:'Potent Aptitude (d10)',desc:'Bonus action: one creature within 60 ft gains a d10 die (add to one attack/check/save within 10 min, before result is known). Uses = INT mod. Short/long rest recharge.'},
+  {name:'Expertise',desc:'4 skill/tool proficiencies with doubled proficiency bonus (2 chosen at Lvl 2, 2 more at Lvl 10). Mark with expert dot in skills.'},
+  {name:'Tinker',desc:'End of long rest: tinker one weapon (+1 atk/dmg) or one suit of armour (+1 AC) until next long rest. 1/long rest.'},
+  {name:'Breakthrough (6th Lvl)',desc:'One 6th-level invention (1 use before maintenance). Choose from: Chain Lightning, Cryogenic Orb, Disintegrate, Entrench, Pathogen, UV Beam.'},
+  {name:'Breakthrough (7th Lvl)',desc:'One 7th-level invention (1 use before maintenance). Choose from: Delayed Explosion, Neurotoxin, Phosphorous Airburst, Sabot Rounds.'},
+];
+const ARMOURER_FEATURES = [
+  {name:'Bonus Proficiencies (Lvl 3)',desc:'Leatherworker\'s Tools, Heavy Armour, Shields. Crafting armour rate doubled.'},
+  {name:'Powered Armour (Lvl 3)',desc:'Long rest + ½ armour cost in materials: upgrade non-magical armour to steam-powered. STR = 14 (if lower). 6 upgrade slots at Lvl 13. Long rest: swap/remove upgrades up to INT mod. Only you are proficient in it.'},
+  {name:'Damage Absorption (Lvl 3)',desc:'Reaction: expend 1 Potent Aptitude die to reduce incoming damage by the roll + INT modifier.'},
+  {name:'Mounted Weapon (Lvl 6)',desc:'When you take the Attack action, you can make one weapon attack as a bonus action. Uses = INT mod. Recharge on armour maintenance.'},
+  {name:'Mounted Invention (Lvl 14)',desc:'When you use your action to activate an invention, you can also trigger Mounted Weapon. [Unlocks next level]'},
+  {name:'Suit Reliability (Lvl 18)',desc:'While wearing powered armour: d20 rolls of 9 or lower on STR/DEX/CON checks and saves treated as 10. [Not yet unlocked]'},
+];
+
+// ================================================================
+// STATE
+// ================================================================
+const SKILLS_DEF = [
+  {name:'Acrobatics',ab:'DEX'},{name:'Animal Handling',ab:'WIS'},{name:'Arcana',ab:'INT'},
+  {name:'Athletics',ab:'STR'},{name:'Deception',ab:'CHA'},{name:'History',ab:'INT'},
+  {name:'Insight',ab:'WIS'},{name:'Intimidation',ab:'CHA'},{name:'Investigation',ab:'INT'},
+  {name:'Medicine',ab:'WIS'},{name:'Nature',ab:'INT'},{name:'Perception',ab:'WIS'},
+  {name:'Performance',ab:'CHA'},{name:'Persuasion',ab:'CHA'},{name:'Religion',ab:'INT'},
+  {name:'Sleight of Hand',ab:'DEX'},{name:'Stealth',ab:'DEX'},{name:'Survival',ab:'WIS'},
+];
+const CONDITIONS = ['Blinded','Charmed','Deafened','Frightened','Grappled','Incapacitated',
+  'Invisible','Paralyzed','Petrified','Poisoned','Prone','Restrained','Stunned','Unconscious'];
+
+let state = {
+  abilities:{STR:10,DEX:10,CON:12,INT:16,WIS:10,CHA:8},
+  profSaves:['INT','CON'],
+  skills:{},
+  conditions:{},
+  exhaustion:0,
+  hpCurrent:85,hpMax:85,tempHP:0,
+  hitDiceUsed:0,
+  paPipsUsed:0,
+  mountedPipsUsed:0,
+  armoured:false,
+  baseAC:16,
+  armourName:'Chain Mail',
+  baseSpeed:25,
+  equippedGadgets:['firearm','electroshock','icy_burst','grappling_cable'],
+  equippedInventions:['discharge_bolt','mortar','stimulant'],
+  invPipsUsed:{},
+  equippedBreakthroughs:['chain_lightning',''],
+  breakthroughUsed:{},
+  equippedUpgrades:['hardened_overlay','darkvision_visor','','','',''],
+  attacks:[
+    {name:'Unarmed (base)',bonus:'STR+PROF',dmg:'1+STR',type:'Bludgeoning'},
+    {name:'Invention Attack',bonus:'INT+PROF',dmg:'Varies',type:'Varies'},
+  ],
+  weapons:[],
+  maintNeeded:{},
+  maintMaterials:{count:0},
+  charName:'[Character Name]',
+  notes:{combat:'',inventory:'',backstory:'',session:''},
+};
+
+// ================================================================
+// HELPERS
+// ================================================================
+const PROF = 5;
+function mod(s){return Math.floor((s-10)/2);}
+function ms(n){return(n>=0?'+':'')+n;}
+function invDC(){return 8+PROF+mod(state.abilities.INT);}
+function invAtk(){return PROF+mod(state.abilities.INT);}
+
+function getUpgrade(id){return UPG_DB.find(u=>u.id===id);}
+function getInv(id){return INV_DB.find(i=>i.id===id);}
+
+// Effective STR (with armour)
+function effectiveSTR(){
+  if(!state.armoured) return state.abilities.STR;
+  let base = state.abilities.STR;
+  if(state.equippedUpgrades.includes('enhanced_strength')) base = Math.max(base, 18);
+  else base = Math.max(base, 14);
+  return base;
+}
+
+// Effective AC
+function effectiveAC(){
+  let ac = state.baseAC;
+  if(state.armoured){
+    state.equippedUpgrades.forEach(uid=>{
+      const u = getUpgrade(uid);
+      if(!u) return;
+      u.statEffects.forEach(e=>{ if(e.type==='ac') ac+=e.value; });
+    });
+  }
+  return ac;
+}
+
+// Effective Speed
+function effectiveSpeed(){
+  let spd = state.baseSpeed;
+  if(state.armoured){
+    state.equippedUpgrades.forEach(uid=>{
+      const u = getUpgrade(uid);
+      if(!u) return;
+      u.statEffects.forEach(e=>{ if(e.type==='speed') spd+=e.value; });
+    });
+  }
+  return spd;
+}
+
+// Physical save bonus from upgrades
+function physSaveBonus(){
+  if(!state.armoured) return 0;
+  let bonus = 0;
+  state.equippedUpgrades.forEach(uid=>{
+    const u = getUpgrade(uid);
+    if(!u) return;
+    u.statEffects.forEach(e=>{ if(e.type==='phys_saves') bonus+=e.value; });
+  });
+  return bonus;
+}
+
+function effectiveAbility(ab){
+  if(ab==='STR') return effectiveSTR();
+  return state.abilities[ab];
+}
+
+function getSkillBonus(name){
+  const s = SKILLS_DEF.find(x=>x.name===name);
+  if(!s) return 0;
+  const base = mod(effectiveAbility(s.ab));
+  const p = state.skills[name]||0;
+  return base + (p===2?PROF*2:p===1?PROF:0);
+}
+
+function getSaveBonus(ab){
+  const isPhys = ['STR','DEX','CON'].includes(ab);
+  const prof = state.profSaves.includes(ab) ? PROF : 0;
+  return mod(effectiveAbility(ab)) + prof + (isPhys ? physSaveBonus() : 0);
+}
+
+function invUses(){return Math.max(1,mod(state.abilities.INT)+Math.floor(13/2));}
+
+// ================================================================
+// ARMOUR TOGGLE
+// ================================================================
+function onArmourToggle(){
+  state.armoured = document.getElementById('armourToggle').checked;
+  saveData();
+  applyArmourMode();
+}
+
+function applyArmourMode(){
+  const on = state.armoured;
+  document.body.classList.toggle('armoured', on);
+  document.getElementById('armourStatusBadge').textContent = on ? 'POWERED ON' : 'OFF';
+  document.getElementById('armourStatusBadge').classList.toggle('on', on);
+  document.getElementById('badgeArmour').style.display = on ? '' : 'none';
+  document.getElementById('armourEffectsPanel').style.display = on ? '' : 'none';
+  document.getElementById('boxSTR').style.display = on ? '' : 'none';
+  document.getElementById('armourAbilityNote').style.display = on ? '' : 'none';
+  buildAbilities();
+  buildSavingThrows();
+  buildSkills();
+  updateDerived();
+  buildArmourEffects();
+}
+
+// ================================================================
+// BUILD UI
+// ================================================================
+function buildAbilities(){
+  const el = document.getElementById('abilityGrid');
+  el.innerHTML='';
+  ['STR','DEX','CON','INT','WIS','CHA'].forEach(ab=>{
+    const base = state.abilities[ab];
+    const eff = effectiveAbility(ab);
+    const boosted = eff !== base;
+    const m = mod(eff);
+    const div = document.createElement('div');
+    div.className = 'ability-box'+(boosted?' boosted':'');
+    div.innerHTML=`
+      <div class="ability-label">${ab}${boosted?` <span style="color:var(--green);font-size:8px">🛡</span>`:''}</div>
+      ${boosted
+        ? `<div style="font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--green);line-height:1;margin:2px 0;text-shadow:0 0 10px rgba(122,184,64,0.4)">${eff}</div>
+           <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim)">base: ${base}</div>`
+        : `<input class="ability-score" id="ab_${ab}" value="${base}" type="number"
+             onchange="onAbilityChange('${ab}',this.value)" />`
+      }
+      <div class="ability-mod${boosted?' boosted':''}" style="cursor:help" onclick="showBreakdown('ability:${ab}',event)" title="Click for breakdown">${ms(m)}</div>
+      <button class="roll-btn" style="margin-top:3px" onclick="rollCheck('${ab}')">CHECK</button>`;
+    // Wire input if not boosted
+    if(!boosted){
+      const inp = div.querySelector('input.ability-score');
+      if(inp) inp.id = 'ab_'+ab;
+    }
+    el.appendChild(div);
+  });
+}
+
+function buildSavingThrows(){
+  const el = document.getElementById('savingThrows');
+  el.innerHTML='';
+  ['STR','DEX','CON','INT','WIS','CHA'].forEach(ab=>{
+    const bonus = getSaveBonus(ab);
+    const prof = state.profSaves.includes(ab);
+    const isPhys = ['STR','DEX','CON'].includes(ab);
+    const pb = physSaveBonus();
+    const row = document.createElement('div');
+    row.className='skill-row';
+    const isMagicAdv = ['INT','WIS','CHA'].includes(ab);
+    row.innerHTML=`
+      <div class="prof-dot${prof?' proficient':''}" onclick="toggleSaveProf('${ab}')"></div>
+      <div class="skill-name${prof?' proficient':''}">${{STR:'Strength',DEX:'Dexterity',CON:'Constitution',INT:'Intelligence',WIS:'Wisdom',CHA:'Charisma'}[ab]}</div>
+      ${isPhys&&pb>0&&state.armoured?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--green)">+${pb}🛡</span>`:''}
+      ${isMagicAdv?`<span title="Gnome Cunning: advantage vs magic" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--cyan-dim);cursor:default">🍄</span>`:''}
+      <button class="roll-btn" onclick="rollSave('${ab}')">ROLL</button>
+      <div class="skill-bonus bd-clickable" onclick="showBreakdown('save:${ab}',event)" title="Click for breakdown">${ms(bonus)}</div>`;
+    el.appendChild(row);
+  });
+}
+
+function buildSkills(){
+  const el = document.getElementById('skillsPanel');
+  el.innerHTML='';
+  SKILLS_DEF.forEach(s=>{
+    const p = state.skills[s.name]||0;
+    const bonus = getSkillBonus(s.name);
+    const row = document.createElement('div');
+    row.className='skill-row';
+    let dc=''; if(p===1)dc='proficient'; if(p===2)dc='expert';
+    const isHistory = s.name === 'History';
+    const artifNote = isHistory ? `<span title="Artificer's Lore: double Prof on magic items, alchemy &amp; tech" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--cyan-dim);cursor:default">🍄</span>` : '';
+    row.innerHTML=`
+      <div class="prof-dot${dc?' '+dc:''}" onclick="cycleSkillProf('${s.name}')"></div>
+      <div class="skill-ability">${s.ab}</div>
+      <div class="skill-name${p>0?' proficient':''}">${s.name}${artifNote}</div>
+      <button class="roll-btn" onclick="rollSkill('${s.name}')">ROLL</button>
+      <div class="skill-bonus bd-clickable" onclick="showBreakdown('skill:${s.name}',event)" title="Click for breakdown">${ms(bonus)}</div>`;
+    el.appendChild(row);
+  });
+}
+
+function buildConditions(){
+  const el = document.getElementById('conditionGrid');
+  el.innerHTML='';
+  CONDITIONS.forEach(c=>{
+    const div=document.createElement('div');
+    div.className='condition-toggle'+(state.conditions[c]?' active':'');
+    div.textContent=c;
+    div.onclick=()=>{state.conditions[c]=!state.conditions[c];div.classList.toggle('active',state.conditions[c]);saveData();};
+    el.appendChild(div);
+  });
+  const exh = document.getElementById('exhaustionRow');
+  exh.innerHTML='';
+  for(let i=1;i<=6;i++){
+    const b=document.createElement('div');
+    b.className='exh-box'+(i<=state.exhaustion?' filled':'');
+    b.textContent=i;
+    b.onclick=()=>{state.exhaustion=(state.exhaustion===i?i-1:i);buildConditions();saveData();};
+    exh.appendChild(b);
+  }
+}
+
+function buildHitDice(){
+  const el=document.getElementById('hitDicePips');
+  el.innerHTML='';
+  for(let i=0;i<13;i++){
+    const d=document.createElement('div');
+    d.className='resource-pip'+(i<state.hitDiceUsed?' used':'');
+    d.onclick=()=>{state.hitDiceUsed=d.classList.contains('used')?state.hitDiceUsed-1:state.hitDiceUsed+1;buildHitDice();saveData();};
+    el.appendChild(d);
+  }
+}
+
+function buildPAPips(){
+  const max=Math.max(1,mod(state.abilities.INT));
+  const el=document.getElementById('paPips');
+  el.innerHTML='';
+  for(let i=0;i<max;i++){
+    const d=document.createElement('div');
+    d.className='resource-pip'+(i<state.paPipsUsed?' used':'');
+    d.onclick=()=>{state.paPipsUsed=d.classList.contains('used')?state.paPipsUsed-1:state.paPipsUsed+1;buildPAPips();saveData();};
+    el.appendChild(d);
+  }
+}
+
+function buildMountedPips(){
+  const max=Math.max(1,mod(state.abilities.INT));
+  const el=document.getElementById('mountedPips');
+  el.innerHTML='';
+  for(let i=0;i<max;i++){
+    const d=document.createElement('div');
+    d.className='resource-pip'+(i<state.mountedPipsUsed?' used':'');
+    d.onclick=()=>{state.mountedPipsUsed=d.classList.contains('used')?state.mountedPipsUsed-1:state.mountedPipsUsed+1;buildMountedPips();saveData();};
+    el.appendChild(d);
+  }
+}
+
+// ================================================================
+// MAINTENANCE TRACKER (central view of all charges/uses)
+// ================================================================
+// ================================================================
+// MAINTENANCE MATERIALS POOL
+// ================================================================
+function buildMaintMaterials(){
+  const el=document.getElementById('maintMaterialsPanel');
+  if(!el) return;
+  if(!state.maintMaterials) state.maintMaterials={count:0};
+  // migrate old shape {max,available} -> {count}
+  if(typeof state.maintMaterials.count==='undefined'){
+    state.maintMaterials={count: state.maintMaterials.available ?? 0};
+  }
+  const mm=state.maintMaterials;
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;justify-content:center;padding:6px 0">
+      <button class="btn btn-outline" style="font-size:14px;padding:2px 12px" onclick="adjustMaintMaterials(-1)">−</button>
+      <div style="text-align:center">
+        <div style="font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:${mm.count>0?'var(--brass)':'var(--red)'};line-height:1">${mm.count}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--parchment-dim);letter-spacing:2px;margin-top:2px">MAINT MATERIALS HELD</div>
+      </div>
+      <button class="btn btn-outline" style="font-size:14px;padding:2px 12px" onclick="adjustMaintMaterials(1)">+</button>
+    </div>
+    <div style="font-size:10px;color:var(--parchment-dim);font-family:'Share Tech Mono',monospace;text-align:center;margin-top:6px;line-height:1.4">
+      Add materials as you find/buy them (50gp × invention level each).<br>
+      Each ✓ in the tracker below consumes 1 from this pool.
+    </div>`;
+}
+
+function adjustMaintMaterials(delta){
+  if(!state.maintMaterials) state.maintMaterials={count:0};
+  state.maintMaterials.count=Math.max(0,state.maintMaterials.count+delta);
+  buildMaintMaterials();
+  saveData();
+}
+
+// Spend one maintenance material; returns true if successful
+function spendMaintMaterial(){
+  if(!state.maintMaterials) state.maintMaterials={count:0};
+  if(state.maintMaterials.count<=0){
+    showRoll('Maintenance','NONE LEFT','find/buy more materials');
+    return false;
+  }
+  state.maintMaterials.count--;
+  buildMaintMaterials();
+  return true;
+}
+
+function refreshMaintTracker(){
+  const el=document.getElementById('maintTrackerPanel');
+  if(!el) return;
+  if(!state.maintNeeded) state.maintNeeded={};
+  if(!state.invPipsUsed) state.invPipsUsed={};
+  if(!state.weapons) state.weapons=[];
+  if(!state.breakthroughUsed) state.breakthroughUsed={};
+
+  let rows=[];
+  const maxInvUses=invUses();
+
+  // Equipped inventions
+  state.equippedInventions.forEach((id,i)=>{
+    if(!id) return;
+    const inv=getInv(id);
+    if(!inv) return;
+    const used=state.invPipsUsed[id]||0;
+    const flagged=state.maintNeeded[id]||used>=maxInvUses;
+    rows.push({
+      icon:'🔧', name:inv.name, sub:`Invention · Lv${inv.level}`,
+      used, max:maxInvUses, flagged,
+      onMinus:`adjustInvUses('${id}',-1)`, onPlus:`adjustInvUses('${id}',1)`,
+      onMaint:`doMaintenance('${id}')`,
+    });
+  });
+
+  // Breakthroughs
+  state.equippedBreakthroughs.forEach((id,i)=>{
+    if(!id) return;
+    const inv=getInv(id);
+    if(!inv) return;
+    const key=id;
+    const used=state.breakthroughUsed[key]?1:0;
+    rows.push({
+      icon:'💥', name:inv.name, sub:`Breakthrough · Lv${inv.level}`,
+      used, max:1, flagged:used>=1,
+      onMinus:`adjustBreakthroughUses('${key}',-1)`, onPlus:`adjustBreakthroughUses('${key}',1)`,
+      onMaint:`resetBreakthrough('${key}',${i})`,
+    });
+  });
+
+  // Weapons with charges
+  state.weapons.forEach((w,i)=>{
+    if(!w.hasCharges) return;
+    const used=w.chargesUsed||0;
+    const max=w.maxCharges||1;
+    rows.push({
+      icon:'⚔', name:`${w.name}${w.chargeName?' — '+w.chargeName:''}`, sub:'Weapon Charges',
+      used, max, flagged: w.needsMaint||used>=max,
+      onMinus:`adjustWeaponCharges(${i},-1)`, onPlus:`adjustWeaponCharges(${i},1)`,
+      onMaint:`resetWeaponCharges(${i})`,
+    });
+  });
+
+  if(rows.length===0){
+    el.innerHTML='<div style="color:var(--parchment-dim);font-family:\'Share Tech Mono\',monospace;font-size:11px;text-align:center;padding:8px">No tracked charges or uses yet.<br>Equip inventions or add weapon charges.</div>';
+    return;
+  }
+
+  el.innerHTML = rows.map(r=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(90,58,20,0.3)">
+      <span style="font-size:14px">${r.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${r.flagged?'var(--red)':'var(--cyan)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ${r.name} ${r.flagged?'<span style="animation:pulse 1.5s ease-in-out infinite">⚠</span>':''}
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--parchment-dim)">${r.sub}</div>
+      </div>
+      <button class="btn btn-outline" style="font-size:11px;padding:1px 8px;min-width:24px" onclick="${r.onMinus}">−</button>
+      <span style="font-family:'Orbitron',monospace;font-size:13px;color:${r.flagged?'var(--red)':'var(--brass)'};min-width:38px;text-align:center">${r.max-r.used}/${r.max}</span>
+      <button class="btn btn-outline" style="font-size:11px;padding:1px 8px;min-width:24px" onclick="${r.onPlus}">+</button>
+      <button class="btn btn-brass" style="font-size:9px;padding:3px 8px" onclick="performMaint(()=>{${r.onMaint}})" title="Perform maintenance — spends 1 maintenance use">✓</button>
+    </div>`).join('');
+}
+
+// Spend a maintenance material then run the given maintenance action
+function performMaint(action){
+  if(spendMaintMaterial()){
+    action();
+  }
+}
+
+// Generic +/- adjusters used by the maintenance tracker.
+// "delta" is applied to REMAINING uses: -1 = consume a use, +1 = restore a use.
+function adjustInvUses(id,delta){
+  const max=invUses();
+  let used=state.invPipsUsed[id]||0;
+  used = used - delta; // consuming a remaining use increases "used"
+  used = Math.min(max, Math.max(0, used));
+  state.invPipsUsed[id]=used;
+  if(!state.maintNeeded) state.maintNeeded={};
+  if(used>=max) state.maintNeeded[id]=true;
+  buildInvSlots();
+  refreshMaintTracker();
+  saveData();
+}
+
+function adjustBreakthroughUses(key,delta){
+  // delta -1 means "use it" (mark used), delta +1 means "restore" (mark unused)
+  state.breakthroughUsed[key] = delta < 0;
+  buildBreakthroughSlots();
+  refreshMaintTracker();
+  saveData();
+}
+
+function adjustWeaponCharges(i,delta){
+  const w=state.weapons[i];
+  if(!w) return;
+  const max=w.maxCharges||1;
+  let used=w.chargesUsed||0;
+  used = used - delta;
+  used = Math.min(max, Math.max(0, used));
+  w.chargesUsed=used;
+  w.needsMaint = used>=max;
+  buildWeaponSlots();
+  buildAttacks();
+  refreshMaintTracker();
+  saveData();
+}
+
+function buildAttacks(){
+  const el=document.getElementById('attacksList');
+  el.innerHTML='';
+  state.attacks.forEach((a,i)=>{
+    // Resolve bonus string
+    let bStr=a.bonus;
+    if(bStr==='STR+PROF'){const s=state.armoured?effectiveSTR():state.abilities.STR;bStr=ms(mod(s)+PROF);}
+    else if(bStr==='INT+PROF')bStr=ms(mod(state.abilities.INT)+PROF);
+    const row=document.createElement('div');
+    row.className='attack-row';
+    row.innerHTML=`<span style="color:var(--white)">${a.name}</span>
+      <span style="color:var(--cyan);text-align:center">${bStr}</span>
+      <span style="color:var(--parchment-dim);text-align:center">${a.dmg}</span>
+      <span style="color:var(--parchment-dim);text-align:center;font-size:10px">${a.type}</span>
+      <span style="color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px" onclick="removeAttack(${i})">✕</span>`;
+    el.appendChild(row);
+  });
+  // Auto-add equipped weapons from Loadout
+  if(!state.weapons) state.weapons=[];
+  state.weapons.forEach((w,i)=>{
+    const bStr = resolveBonus(w.bonus);
+    const row=document.createElement('div');
+    row.className='attack-row';
+    const maxC=w.maxCharges||1, used=w.chargesUsed||0;
+    const remaining=maxC-used;
+    // Charge pips, clickable to mark/unmark a charge as used
+    let chargePipsHTML='';
+    if(w.hasCharges){
+      for(let p=0;p<maxC;p++){
+        chargePipsHTML+=`<div class="use-pip${p<used?' used':''}" style="width:13px;height:13px" onclick="toggleWeaponCharge(${i},${p})" title="Charge ${p+1}${p<used?' (used)':' (available)'}"></div>`;
+      }
+    }
+    const chargeWarn = w.hasCharges && remaining<=0
+      ? `<span style="color:var(--red);font-size:9px;animation:pulse 1.5s ease-in-out infinite;margin-left:4px">⚠ MAINT</span>`
+      : '';
+    const chargeDmgPart = (w.hasCharges&&w.chargeDmg)
+      ? ` <span style="color:var(--brass)">+ ${w.chargeDmg}</span>`
+      : '';
+    row.innerHTML=`<span style="color:var(--white)">⚔ ${w.name}</span>
+      <span style="color:var(--cyan);text-align:center;font-family:'Orbitron',monospace;font-weight:700">${bStr}</span>
+      <span style="color:var(--parchment-dim);text-align:center">${w.dmg||'—'}${chargeDmgPart}</span>
+      <span style="color:var(--parchment-dim);text-align:center;font-size:10px">${w.type||''}</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:10px"></span>`;
+    el.appendChild(row);
+    // If this weapon has charges, add a sub-row with pips so they're easy to tap while rolling physical dice
+    if(w.hasCharges){
+      const subRow=document.createElement('div');
+      subRow.className='attack-row';
+      subRow.style.borderBottom='1px solid rgba(90,58,20,0.3)';
+      subRow.style.paddingTop='0';
+      subRow.innerHTML=`
+        <span style="grid-column:1/3;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px;padding-left:14px">
+          ${w.chargeName?w.chargeName+': ':''}${remaining}/${maxC} charges${chargeWarn}
+        </span>
+        <span style="grid-column:3/6;display:flex;gap:3px;align-items:center;justify-content:flex-end">${chargePipsHTML}</span>`;
+      el.appendChild(subRow);
+    }
+  });
+}
+
+function buildArmourEffects(){
+  const el=document.getElementById('armourEffectsList');
+  if(!el) return;
+  if(!state.armoured){el.innerHTML='';return;}
+  let html='';
+  const armSTR = effectiveSTR();
+  html+=`<div class="effect-row"><span class="effect-icon">💪</span><div class="effect-text">STR is ${armSTR} (powered armour base)<span class="effect-source" style="display:block">Powered Armour</span></div></div>`;
+  state.equippedUpgrades.forEach(uid=>{
+    const u=getUpgrade(uid);
+    if(!u) return;
+    u.statEffects.forEach(e=>{
+      let icon='⚙', text='';
+      if(e.type==='ac')     {icon='🛡';text=`+${e.value} AC (total AC: ${effectiveAC()})`;}
+      else if(e.type==='speed'){icon='⚡';text=`Speed +${e.value} ft (total: ${effectiveSpeed()} ft)`;}
+      else if(e.type==='resistance'){icon='🔰';text=`Resistance: ${e.value} damage`;}
+      else if(e.type==='phys_saves'){icon='🎯';text=`+${e.value} to physical saving throws`;}
+      else if(e.type==='note'){text=e.value;}
+      else if(e.type==='str_override'){icon='💪';text=`STR set to ${e.value}`;}
+      if(!text) return;
+      html+=`<div class="effect-row"><span class="effect-icon">${icon}</span>
+        <div class="effect-text">${text}<span class="effect-source" style="display:block">${u.name}</span></div></div>`;
+    });
+  });
+  el.innerHTML=html||'<div style="color:var(--parchment-dim);font-size:12px;font-family:\'Share Tech Mono\',monospace">No upgrades equipped.</div>';
+}
+
+function updateDerived(){
+  const dex=mod(state.abilities.DEX);
+  document.getElementById('initiativeVal').textContent=ms(dex);
+  document.getElementById('invDC').textContent=invDC();
+  document.getElementById('invAtk').textContent=ms(invAtk());
+  document.getElementById('acDisplay').textContent=effectiveAC();
+  document.getElementById('speedDisplay').textContent=effectiveSpeed()+' ft';
+  document.getElementById('armourSTR').textContent=effectiveSTR();
+  // Keep editable base inputs in sync with state (not computed values)
+  const baseACEl=document.getElementById('baseACInput');
+  if(baseACEl) baseACEl.value=state.baseAC;
+  const baseSpdEl=document.getElementById('baseSpeedInput');
+  if(baseSpdEl) baseSpdEl.value=state.baseSpeed;
+  // Darkvision note
+  const dvNote = document.getElementById('darkvisionNote');
+  if(dvNote){
+    const hasVisor = state.equippedUpgrades.includes('darkvision_visor');
+    dvNote.textContent = hasVisor && state.armoured ? '(+60 ft from Darkvision Visor = 120 ft total 🛡)' : '';
+  }
+  // Passive scores — History gets double prof from Artificer's Lore
+  document.getElementById('passivePerc').textContent=10+getSkillBonus('Perception');
+  document.getElementById('passiveInv').textContent=10+getSkillBonus('Investigation');
+  document.getElementById('passiveIns').textContent=10+getSkillBonus('Insight');
+  // Badges
+  const eg=state.equippedGadgets.filter(Boolean).length;
+  const ei=state.equippedInventions.filter(Boolean).length;
+  const eu=state.equippedUpgrades.filter(Boolean).length;
+  document.getElementById('badgeGadgets').textContent=`Gadgets: ${eg}/4`;
+  document.getElementById('badgeInv').textContent=`Inventions: ${ei}/3`;
+  document.getElementById('badgeUpgrades').textContent=`Upgrades: ${eu}/6`;
+  document.getElementById('upgradeCountLabel').textContent=eu;
+  buildAttacks();
+}
+
+function updateHPBar(){
+  const cur=parseInt(document.getElementById('hpCurrent').value)||0;
+  const max=parseInt(document.getElementById('hpMax').value)||1;
+  const pct=Math.min(100,Math.max(0,(cur/max)*100));
+  const bar=document.getElementById('hpBar');
+  if(!bar)return;
+  bar.style.width=pct+'%';
+  if(pct>50)bar.style.background='linear-gradient(90deg,var(--green),#2aff8a)';
+  else if(pct>25)bar.style.background='linear-gradient(90deg,#d4a030,#ffcc44)';
+  else bar.style.background='linear-gradient(90deg,var(--red),#ff6666)';
+}
+
+// ================================================================
+// LOADOUT
+// ================================================================
+function buildLoadout(){
+  buildWeaponSlots();
+  buildGadgetSlots();
+  buildInvSlots();
+  buildBreakthroughSlots();
+  buildUpgradeSlots();
+  buildActiveEffects();
+}
+
+function buildWeaponSlots(){
+  const el=document.getElementById('weaponSlotPanel');
+  if(!el) return;
+  el.innerHTML='';
+  if(!state.weapons) state.weapons=[];
+  if(state.weapons.length===0){
+    el.innerHTML='<div style="color:var(--parchment-dim);font-family:\'Share Tech Mono\',monospace;font-size:11px;text-align:center;padding:10px">No weapons added. Click + ADD above.</div>';
+    return;
+  }
+  state.weapons.forEach((w,i)=>{
+    const atkBonus = resolveBonus(w.bonus);
+    const hasCharges = w.hasCharges;
+    const maxCharges = w.maxCharges || 1;
+    const used = w.chargesUsed || 0;
+    const maintFlag = w.needsMaint || (hasCharges && used>=maxCharges);
+    if(hasCharges && used>=maxCharges) w.needsMaint=true;
+    let chargePips='';
+    if(hasCharges){for(let p=0;p<maxCharges;p++){chargePips+=`<div class="use-pip${p<used?' used':''}" onclick="event.stopPropagation();toggleWeaponCharge(${i},${p})" title="Charge ${p+1}"></div>`;}}
+    const card=document.createElement('div');
+    card.style.cssText='background:var(--navy);border:1px solid var(--border);padding:9px 11px;margin-bottom:7px;';
+    card.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1">
+          <input style="background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass);
+            font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:1px;outline:none;width:100%;"
+            value="${w.name}" placeholder="Weapon name"
+            onchange="state.weapons[${i}].name=this.value;saveData()" />
+          <div style="display:flex;gap:10px;margin-top:5px;flex-wrap:wrap">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--parchment-dim)">
+              ATK <span style="color:var(--cyan);font-weight:bold">${atkBonus}</span>
+            </span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--parchment-dim)">
+              DMG <span style="color:var(--white)">${w.dmg||'—'}</span>
+            </span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--parchment-dim)">${w.type||''}</span>
+          </div>
+          ${w.notes?`<div style="font-size:11px;color:var(--parchment-dim);margin-top:3px">${w.notes}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <button class="roll-btn" onclick="rollWeapon(${i})" style="font-size:10px;padding:3px 9px">ROLL ATK</button>
+          <button class="btn btn-outline" style="font-size:9px;padding:2px 7px;color:var(--red)" onclick="removeWeapon(${i})">✕ REMOVE</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:7px;padding-top:6px;border-top:1px solid var(--border)">
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);letter-spacing:1px">ATK BONUS</div>
+          <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--cyan);
+            font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;"
+            value="${w.bonus||''}" placeholder="+INT+PROF or +7"
+            onchange="state.weapons[${i}].bonus=this.value;buildWeaponSlots();saveData()" />
+        </div>
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);letter-spacing:1px">DAMAGE</div>
+          <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--white);
+            font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;"
+            value="${w.dmg||''}" placeholder="1d8+3"
+            onchange="state.weapons[${i}].dmg=this.value;buildWeaponSlots();saveData()" />
+        </div>
+        <div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);letter-spacing:1px">TYPE</div>
+          <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--parchment-dim);
+            font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;"
+            value="${w.type||''}" placeholder="Piercing"
+            onchange="state.weapons[${i}].type=this.value;buildWeaponSlots();saveData()" />
+        </div>
+      </div>
+      <div style="margin-top:5px">
+        <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--parchment-dim);
+          font-family:'Share Tech Mono',monospace;font-size:10px;outline:none;width:100%;"
+          value="${w.notes||''}" placeholder="Notes (range, properties, +1 magic, etc.)"
+          onchange="state.weapons[${i}].notes=this.value;buildWeaponSlots();saveData()" />
+      </div>
+      <div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--brass-dim);letter-spacing:1px">
+          <input type="checkbox" ${hasCharges?'checked':''} style="cursor:pointer;accent-color:var(--brass)"
+            onchange="toggleWeaponCharges(${i},this.checked)" />
+          ⚡ HAS CHARGED ABILITY (maintenance-based)
+        </label>
+        ${hasCharges?`
+        <div style="margin-top:7px;padding:8px 9px;background:rgba(0,0,0,0.25);border:1px solid var(--brass-dim)">
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:7px">
+            <div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);letter-spacing:1px">ABILITY NAME</div>
+              <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--brass);
+                font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;"
+                value="${w.chargeName||''}" placeholder="e.g. Flame Burst"
+                onchange="state.weapons[${i}].chargeName=this.value;buildWeaponSlots();saveData()" />
+            </div>
+            <div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);letter-spacing:1px">MAX CHARGES</div>
+              <input type="number" min="1" max="20" style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--brass);
+                font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;"
+                value="${maxCharges}"
+                onchange="state.weapons[${i}].maxCharges=Math.max(1,parseInt(this.value)||1);buildWeaponSlots();saveData()" />
+            </div>
+          </div>
+          <div style="margin-top:6px">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);letter-spacing:1px">EXTRA DAMAGE (consumed per charge)</div>
+            <input style="background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--white);
+              font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;"
+              value="${w.chargeDmg||''}" placeholder="2d6 fire"
+              onchange="state.weapons[${i}].chargeDmg=this.value;buildWeaponSlots();saveData()" />
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${maintFlag?'var(--red)':'var(--parchment-dim)'}">${maxCharges-used}/${maxCharges} charges</span>
+            <div style="display:flex;gap:3px;flex-wrap:wrap">${chargePips}</div>
+            ${maintFlag?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--red);letter-spacing:1px;animation:pulse 1.5s ease-in-out infinite">⚠ MAINT</span>`:''}
+            <button class="btn btn-cyan" style="font-size:10px;padding:3px 9px" onclick="rollWeaponCharge(${i})">ROLL ${w.chargeName?w.chargeName.toUpperCase():'CHARGE'}</button>
+            <button class="btn btn-brass" style="font-size:9px;padding:2px 7px;margin-left:auto" onclick="resetWeaponCharges(${i})">✓ MAINT</button>
+          </div>
+        </div>`:''}
+      </div>`;
+    el.appendChild(card);
+  });
+}
+
+function resolveBonus(bonusStr){
+  if(!bonusStr) return '—';
+  const s = bonusStr.trim().toUpperCase();
+  // Named formula support
+  if(s.includes('INT') && s.includes('PROF')){
+    const n = PROF + mod(state.abilities.INT);
+    return ms(n);
+  }
+  if(s.includes('STR') && s.includes('PROF')){
+    const n = PROF + mod(effectiveAbility('STR'));
+    return ms(n);
+  }
+  if(s.includes('DEX') && s.includes('PROF')){
+    const n = PROF + mod(state.abilities.DEX);
+    return ms(n);
+  }
+  return bonusStr;
+}
+
+function addWeapon(){
+  if(!state.weapons) state.weapons=[];
+  state.weapons.push({
+    name:'New Weapon',bonus:'+INT+PROF',dmg:'1d6',type:'Piercing',notes:'',
+    hasCharges:false,chargeName:'',chargeDmg:'',maxCharges:1,chargesUsed:0,needsMaint:false
+  });
+  buildWeaponSlots();
+  buildAttacks();
+  saveData();
+}
+
+function toggleWeaponCharges(i,checked){
+  state.weapons[i].hasCharges=checked;
+  if(checked && !state.weapons[i].maxCharges) state.weapons[i].maxCharges=1;
+  buildWeaponSlots();
+  buildAttacks();
+  saveData();
+}
+
+function toggleWeaponCharge(i,p){
+  const w=state.weapons[i];
+  const cur=w.chargesUsed||0;
+  w.chargesUsed=(p<cur)?p:p+1;
+  w.needsMaint = w.chargesUsed>=w.maxCharges;
+  buildWeaponSlots();
+  buildAttacks();
+  refreshMaintTracker();
+  saveData();
+}
+
+function resetWeaponCharges(i){
+  state.weapons[i].chargesUsed=0;
+  state.weapons[i].needsMaint=false;
+  buildWeaponSlots();
+  buildAttacks();
+  refreshMaintTracker();
+  saveData();
+}
+
+function rollWeaponCharge(i){
+  const w=state.weapons[i];
+  if(!w) return;
+  const used=w.chargesUsed||0;
+  const max=w.maxCharges||1;
+  if(used>=max){
+    showRoll(w.chargeName||'Charge','NO CHARGES');
+    return;
+  }
+  // consume a charge
+  w.chargesUsed=used+1;
+  if(w.chargesUsed>=max) w.needsMaint=true;
+  buildWeaponSlots();
+  buildAttacks();
+  refreshMaintTracker();
+  saveData();
+  // Roll the extra damage dice if formatted like "2d6 fire" / "2d6"
+  const diceMatch=(w.chargeDmg||'').match(/(\d+)d(\d+)/i);
+  if(diceMatch){
+    const num=parseInt(diceMatch[1]), sides=parseInt(diceMatch[2]);
+    let total=0;
+    for(let n=0;n<num;n++) total+=Math.floor(Math.random()*sides)+1;
+    showRoll(w.chargeName||'Charge Damage', total, `${num}d${sides}`);
+  } else {
+    showRoll(w.chargeName||'Charge', 'USED', w.chargeDmg||'');
+  }
+}
+
+function removeWeapon(i){
+  state.weapons.splice(i,1);
+  buildWeaponSlots();
+  buildAttacks();
+  saveData();
+}
+
+function rollWeapon(i){
+  const w = state.weapons[i];
+  if(!w) return;
+  const bonusStr = resolveBonus(w.bonus);
+  const bonusNum = parseInt(bonusStr) || 0;
+  const roll = Math.floor(Math.random()*20)+1;
+  showRoll(w.name+' Attack', roll+bonusNum, `d20(${roll})${bonusStr}`);
+}
+
+// Roll a dice string like "2d6+3" or "1d8" -> {total, detail}
+function rollDiceString(str){
+  if(!str) return {total:0, detail:''};
+  let total=0;
+  let details=[];
+  // match all dice groups (NdM) and flat modifiers
+  const diceRe=/(\d+)d(\d+)/gi;
+  let match;
+  let remaining=str;
+  while((match=diceRe.exec(str))!==null){
+    const num=parseInt(match[1]), sides=parseInt(match[2]);
+    let subtotal=0;
+    const rolls=[];
+    for(let n=0;n<num;n++){const r=Math.floor(Math.random()*sides)+1;rolls.push(r);subtotal+=r;}
+    total+=subtotal;
+    details.push(`${num}d${sides}(${rolls.join('+')})`);
+  }
+  // flat modifier like "+3" after dice (only simple trailing integer)
+  const flatMatch=str.match(/d\d+\s*([+-]\s*\d+)/i);
+  if(flatMatch){
+    const flat=parseInt(flatMatch[1].replace(/\s/g,''));
+    total+=flat;
+    details.push((flat>=0?'+':'')+flat);
+  }
+  return {total, detail:details.join(' ')};
+}
+
+// Roll weapon damage. If includeCharge is true and the weapon has a charge ability,
+// also roll the charge damage and consume one charge.
+function rollWeaponDamage(i,includeCharge){
+  const w=state.weapons[i];
+  if(!w) return;
+  const base=rollDiceString(w.dmg||'');
+  let total=base.total;
+  let detail=base.detail;
+  let label=w.name+' Damage';
+
+  if(includeCharge && w.hasCharges && w.chargeDmg){
+    const used=w.chargesUsed||0;
+    const max=w.maxCharges||1;
+    if(used>=max){
+      showRoll(w.name+' Damage', base.total, base.detail+' — NO CHARGES for '+(w.chargeName||'bonus'));
+      return;
+    }
+    const charge=rollDiceString(w.chargeDmg);
+    total+=charge.total;
+    detail+= ' + '+charge.detail+(w.chargeName?' ('+w.chargeName+')':'');
+    label=w.name+' Damage + '+(w.chargeName||'Charge');
+    // consume a charge
+    w.chargesUsed=used+1;
+    if(w.chargesUsed>=max) w.needsMaint=true;
+    buildWeaponSlots();
+    buildAttacks();
+    refreshMaintTracker();
+    saveData();
+  }
+
+  showRoll(label, total, detail);
+}
+
+function buildGadgetSlots(){
+  const el=document.getElementById('gadgetSlotPanel');
+  el.innerHTML='';
+  for(let i=0;i<4;i++){
+    const id=state.equippedGadgets[i]||'';
+    const inv=id?getInv(id):null;
+    const wrap=document.createElement('div');
+    wrap.style.cssText='background:var(--navy);border:1px solid '+(id?'var(--cyan-dim)':'var(--border)')+';padding:9px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;';
+    wrap.innerHTML=`
+      <div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--parchment-dim)">GADGET ${i+1}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:${id?'var(--cyan)':'var(--border)'};">${inv?inv.name:'— empty —'}</div>
+        ${inv?`<div style="font-size:11px;color:var(--parchment-dim);margin-top:2px">${inv.activation} · ${inv.range}</div>`:''}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-cyan" style="font-size:9px;padding:3px 8px" onclick="openGadgetPicker(${i})">CHANGE</button>
+        ${id?`<button class="btn btn-outline" style="font-size:9px;padding:3px 8px;color:var(--red)" onclick="clearGadget(${i})">✕</button>`:''}
+      </div>`;
+    el.appendChild(wrap);
+  }
+}
+
+function buildInvSlots(){
+  const el=document.getElementById('invSlotPanel');
+  el.innerHTML='';
+  const maxUses=invUses();
+  if(!state.maintNeeded) state.maintNeeded={};
+  for(let i=0;i<3;i++){
+    const id=state.equippedInventions[i]||'';
+    const inv=id?getInv(id):null;
+    const used=state.invPipsUsed[id]||0;
+    const needsMaint=state.maintNeeded[id]||false;
+    const allUsed=inv&&used>=maxUses;
+    if(allUsed&&id) state.maintNeeded[id]=true;
+    const maintFlag=needsMaint||allUsed;
+    const card=document.createElement('div');
+    card.className='inv-card';
+    // Pips always visible in header
+    let pipsHTML='';
+    if(inv){for(let p=0;p<maxUses;p++){pipsHTML+=`<div class="use-pip${p<used?' used':''}" onclick="event.stopPropagation();toggleInvPip('${id}',${p})" title="Use ${p+1}"></div>`;}}
+    card.innerHTML=`
+      <div class="inv-card-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+          <div style="display:flex;gap:7px;align-items:center">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--parchment-dim);white-space:nowrap">SLOT ${i+1}</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${inv?'var(--cyan)':'var(--border)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${inv?inv.name:'— empty —'}</div>
+            ${inv?`<span class="lib-tag lv${inv.level}">LV${inv.level}</span>`:''}
+            ${maintFlag?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--red);letter-spacing:1px;animation:pulse 1.5s ease-in-out infinite;white-space:nowrap">⚠ MAINT</span>`:''}
+          </div>
+          ${inv?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${maintFlag?'var(--red)':'var(--parchment-dim)'}">${maxUses-used}/${maxUses} uses</span>
+            <div style="display:flex;gap:3px;flex-wrap:wrap">${pipsHTML}</div>
+            <button class="btn btn-brass" style="font-size:9px;padding:2px 7px;margin-left:auto" onclick="event.stopPropagation();doMaintenance('${id}')" title="Reset uses, clear maintenance flag">✓ MAINT</button>
+          </div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;margin-left:6px;flex-shrink:0">
+          <button class="btn btn-cyan" style="font-size:9px;padding:3px 8px" onclick="event.stopPropagation();openInvPicker(${i})">CHG</button>
+          ${id?`<button class="btn btn-outline" style="font-size:9px;padding:2px 7px;color:var(--red)" onclick="event.stopPropagation();clearInv(${i})">✕</button>`:''}
+          ${inv?'<span style="color:var(--parchment-dim);font-size:11px;margin-top:2px">▾</span>':''}
+        </div>
+      </div>
+      ${inv?`<div class="inv-card-body">
+        <div style="font-size:11px;color:var(--parchment-dim);margin-bottom:7px;line-height:1.5">${inv.desc}</div>
+        <div class="lib-meta">
+          <span class="lib-meta-tag">⏱ ${inv.activation}</span>
+          <span class="lib-meta-tag">📍 ${inv.range}</span>
+          <span class="lib-meta-tag">⌛ ${inv.duration}</span>
+        </div>
+        <div style="margin-top:8px;padding:6px 8px;background:rgba(0,0,0,0.25);font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--parchment-dim);letter-spacing:1px;display:flex;justify-content:space-between;align-items:center">
+          <span>MAINT COST: ${inv.level*50}gp · 1hr · Tinker's Tools</span>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;color:${maintFlag?'var(--red)':'var(--parchment-dim)'}">
+            <input type="checkbox" ${maintFlag?'checked':''} style="cursor:pointer;accent-color:var(--red)"
+              onchange="state.maintNeeded['${id}']=this.checked;buildInvSlots();saveData()" />
+            NEEDS MAINT
+          </label>
+        </div>
+      </div>`:''}`;
+    el.appendChild(card);
+  }
+}
+
+function buildBreakthroughSlots(){
+  const el=document.getElementById('breakthroughPanel');
+  el.innerHTML='';
+
+  // Slot 0 — 6th level, pick from library
+  const id0=state.equippedBreakthroughs[0]||'';
+  const inv0=id0?getInv(id0):null;
+  const used0=state.breakthroughUsed[id0]||false;
+  const card0=document.createElement('div');
+  card0.className='inv-card';
+  card0.innerHTML=`
+    <div class="inv-card-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;gap:8px;align-items:center;flex:1">
+        <span class="lib-tag lv6" style="min-width:28px;text-align:center">LV6</span>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${inv0?'var(--cyan)':'var(--border)'};">${inv0?inv0.name:'— empty —'}</div>
+      </div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <div class="use-pip${used0?' used':''}" onclick="event.stopPropagation();toggleBreakthrough('${id0||'bt0'}',0)" title="1 use"></div>
+        <button class="btn btn-brass" style="font-size:9px;padding:3px 7px" onclick="event.stopPropagation();resetBreakthrough('${id0||'bt0'}',0)">MAINT</button>
+        <button class="btn btn-cyan" style="font-size:9px;padding:3px 7px" onclick="event.stopPropagation();openBTPicker(0,6)">CHG</button>
+        ${inv0?'<span style="color:var(--parchment-dim);font-size:12px">▾</span>':''}
+      </div>
+    </div>
+    ${inv0?`<div class="inv-card-body"><div style="font-size:11px;color:var(--parchment-dim)">${inv0.desc}</div>
+      <div class="lib-meta" style="margin-top:6px">
+        <span class="lib-meta-tag">⏱ ${inv0.activation}</span>
+        <span class="lib-meta-tag">📍 ${inv0.range}</span>
+      </div></div>`:''}`;
+  el.appendChild(card0);
+
+  // Slot 1 — 7th level, pick from library
+  const id1=state.equippedBreakthroughs[1]||'';
+  const inv1=id1?getInv(id1):null;
+  const used1=state.breakthroughUsed['bt1']||false;
+  const card1=document.createElement('div');
+  card1.className='inv-card';
+  card1.innerHTML=`
+    <div class="inv-card-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;gap:8px;align-items:center;flex:1">
+        <span class="lib-tag lv7" style="min-width:28px;text-align:center">LV7</span>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:${inv1?'var(--cyan)':'var(--border)'};">${inv1?inv1.name:'— empty —'}</div>
+      </div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <div class="use-pip${used1?' used':''}" onclick="event.stopPropagation();toggleBreakthrough('bt1',1)" title="1 use"></div>
+        <button class="btn btn-brass" style="font-size:9px;padding:3px 7px" onclick="event.stopPropagation();resetBreakthrough('bt1',1)">MAINT</button>
+        <button class="btn btn-cyan" style="font-size:9px;padding:3px 7px" onclick="event.stopPropagation();openBTPicker(1,7)">CHG</button>
+        ${inv1?'<span style="color:var(--parchment-dim);font-size:12px">▾</span>':''}
+      </div>
+    </div>
+    ${inv1?`<div class="inv-card-body"><div style="font-size:11px;color:var(--parchment-dim)">${inv1.desc}</div>
+      <div class="lib-meta" style="margin-top:6px">
+        <span class="lib-meta-tag">⏱ ${inv1.activation}</span>
+        <span class="lib-meta-tag">📍 ${inv1.range}</span>
+      </div></div>`:''}`;
+  el.appendChild(card1);
+}
+
+function buildUpgradeSlots(){
+  const el=document.getElementById('upgradeSlotsGrid');
+  el.innerHTML='';
+  for(let i=0;i<6;i++){
+    const id=state.equippedUpgrades[i]||'';
+    const upg=id?getUpgrade(id):null;
+    const div=document.createElement('div');
+    div.className='upg-slot'+(upg?' filled':'');
+    div.innerHTML=`<div class="upg-slot-num">SLOT ${i+1}</div>
+      <div class="upg-slot-name${upg?'':' empty'}">${upg?upg.name:'+ assign upgrade'}</div>
+      ${upg&&upg.prereq?`<div style="font-size:9px;color:var(--brass-dim);font-family:'Share Tech Mono',monospace;margin-top:2px">Req: ${upg.prereq}</div>`:''}`;
+    div.onclick=()=>openUpgradePicker(i);
+    el.appendChild(div);
+  }
+}
+
+function buildActiveEffects(){
+  const el=document.getElementById('activeEffectsSummary');
+  if(!el) return;
+  let rows=[];
+  // Gadgets
+  state.equippedGadgets.forEach(id=>{
+    const inv=getInv(id);
+    if(inv) rows.push(`<div class="effect-row"><span class="effect-icon">⚗</span><div class="effect-text">${inv.name} <span class="lib-tag gadget">GADGET</span><span class="effect-source" style="display:block">At-will · ${inv.activation} · ${inv.range}</span></div></div>`);
+  });
+  // Inventions
+  const mu=invUses();
+  state.equippedInventions.forEach(id=>{
+    const inv=getInv(id);
+    const used=state.invPipsUsed[id]||0;
+    if(inv) rows.push(`<div class="effect-row"><span class="effect-icon">🔧</span><div class="effect-text">${inv.name} <span class="lib-tag lv${inv.level}">LV${inv.level}</span><span class="effect-source" style="display:block">${mu-used}/${mu} uses · ${inv.activation}</span></div></div>`);
+  });
+  // Upgrades (armoured)
+  if(state.armoured){
+    state.equippedUpgrades.forEach(id=>{
+      const u=getUpgrade(id);
+      if(u) rows.push(`<div class="effect-row"><span class="effect-icon">🛡</span><div class="effect-text">${u.name}<span class="effect-source" style="display:block">${u.statEffects.filter(e=>e.type!=='note').map(e=>e.type+':'+e.value).join(', ')||'see description'}</span></div></div>`);
+    });
+  }
+  el.innerHTML=rows.length?rows.join(''):'<div style="color:var(--parchment-dim);font-size:12px;font-family:\'Share Tech Mono\',monospace">No equipped items.</div>';
+}
+
+// ================================================================
+// LIBRARY
+// ================================================================
+let libInvFilter='all';
+function buildLibrary(){
+  buildInvLibrary();
+  buildUpgLibrary();
+}
+
+function buildInvLibrary(){
+  // Filters
+  const filterEl=document.getElementById('invFilters');
+  filterEl.innerHTML='';
+  ['all','gadget','1','2','3','4','5','6','7'].forEach(f=>{
+    const b=document.createElement('button');
+    b.className='lib-filter-btn'+(libInvFilter===f?' active':'');
+    b.textContent=f==='all'?'ALL':f==='gadget'?'GADGETS':'LVL '+f;
+    b.onclick=()=>{libInvFilter=f;buildInvLibrary();};
+    filterEl.appendChild(b);
+  });
+  const search=(document.getElementById('invSearch').value||'').toLowerCase();
+  const el=document.getElementById('invLibraryList');
+  el.innerHTML='';
+  INV_DB.filter(inv=>{
+    const matchFilter=libInvFilter==='all'||(libInvFilter==='gadget'&&inv.type==='gadget')||(libInvFilter===String(inv.level));
+    const matchSearch=!search||inv.name.toLowerCase().includes(search)||inv.desc.toLowerCase().includes(search);
+    return matchFilter&&matchSearch;
+  }).forEach(inv=>el.appendChild(makeInvLibItem(inv)));
+}
+
+function makeInvLibItem(inv){
+  const isGadgetEquipped=state.equippedGadgets.includes(inv.id);
+  const isInvEquipped=state.equippedInventions.includes(inv.id)||state.equippedBreakthroughs.includes(inv.id);
+  const isEquipped=isGadgetEquipped||isInvEquipped;
+  const tagClass=inv.type==='gadget'?'gadget':'lv'+inv.level;
+  const tagLabel=inv.type==='gadget'?'GADGET':'LVL '+inv.level;
+  const div=document.createElement('div');
+  div.className='lib-item';
+  div.innerHTML=`
+    <div class="lib-item-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+      <span class="lib-item-name">${inv.name}</span>
+      <div class="lib-item-tags">
+        <span class="lib-tag ${tagClass}">${tagLabel}</span>
+        ${isEquipped?'<span class="lib-tag equipped">EQUIPPED</span>':''}
+        <span style="color:var(--parchment-dim);font-size:11px;margin-left:4px">▾</span>
+      </div>
+    </div>
+    <div class="lib-item-body">
+      <div class="lib-meta">
+        <span class="lib-meta-tag">⏱ ${inv.activation}</span>
+        <span class="lib-meta-tag">📍 ${inv.range}</span>
+        <span class="lib-meta-tag">⌛ ${inv.duration}</span>
+      </div>
+      <div style="font-size:12px;color:var(--parchment-dim);line-height:1.5">${inv.desc}</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">
+        ${inv.type==='gadget'?
+          (!isGadgetEquipped?`<button class="lib-equip-btn gadget-btn" onclick="quickEquipGadget('${inv.id}')">EQUIP AS GADGET</button>`:
+          `<button class="lib-equip-btn unequip" onclick="quickUnequipGadget('${inv.id}')">REMOVE GADGET</button>`)
+        :''}
+        ${inv.type==='invention'&&inv.level<=5?
+          (!isInvEquipped?`<button class="lib-equip-btn equip" onclick="quickEquipInv('${inv.id}')">EQUIP AS INVENTION</button>`:
+          `<button class="lib-equip-btn unequip" onclick="quickUnequipInv('${inv.id}')">UNEQUIP INVENTION</button>`)
+        :''}
+        ${inv.type==='invention'&&inv.level===6?
+          (!isInvEquipped?`<button class="lib-equip-btn equip" onclick="quickEquipBreakthrough('${inv.id}',0)">EQUIP AS BREAKTHROUGH</button>`:
+          `<button class="lib-equip-btn unequip" onclick="clearBreakthroughById('${inv.id}')">REMOVE BREAKTHROUGH</button>`)
+        :''}
+        ${inv.type==='invention'&&inv.level===7?
+          (!isInvEquipped?`<button class="lib-equip-btn equip" onclick="quickEquipBreakthrough('${inv.id}',1)">EQUIP AS 7TH BREAKTHROUGH</button>`:
+          `<button class="lib-equip-btn unequip" onclick="clearBreakthroughById('${inv.id}')">REMOVE BREAKTHROUGH</button>`)
+        :''}
+      </div>
+    </div>`;
+  return div;
+}
+
+function buildUpgLibrary(){
+  const search=(document.getElementById('upgSearch').value||'').toLowerCase();
+  const el=document.getElementById('upgLibraryList');
+  el.innerHTML='';
+  UPG_DB.filter(u=>!search||u.name.toLowerCase().includes(search)||u.desc.toLowerCase().includes(search))
+    .forEach(u=>{
+      const equipped=state.equippedUpgrades.includes(u.id);
+      const div=document.createElement('div');
+      div.className='lib-item';
+      div.innerHTML=`
+        <div class="lib-item-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+          <span class="lib-item-name">${u.name}</span>
+          <div class="lib-item-tags">
+            <span class="lib-tag upgrade">UPGRADE</span>
+            ${equipped?'<span class="lib-tag equipped">EQUIPPED</span>':''}
+            ${u.prereq?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);margin-left:4px">REQ</span>`:''}
+            <span style="color:var(--parchment-dim);font-size:11px;margin-left:4px">▾</span>
+          </div>
+        </div>
+        <div class="lib-item-body">
+          ${u.prereq?`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--brass-dim);margin-bottom:5px">Prerequisite: ${u.prereq}</div>`:''}
+          <div style="font-size:12px;color:var(--parchment-dim);line-height:1.5">${u.desc}</div>
+          <div style="margin-top:7px">
+            ${!equipped?
+              `<button class="lib-equip-btn equip" onclick="quickEquipUpgrade('${u.id}')">EQUIP UPGRADE</button>`:
+              `<button class="lib-equip-btn unequip" onclick="quickUnequipUpgrade('${u.id}')">REMOVE UPGRADE</button>`}
+          </div>
+        </div>`;
+      el.appendChild(div);
+    });
+}
+
+// ================================================================
+// PICKERS (modal-style for inline slot assignment)
+// ================================================================
+let currentModalSlot=-1, currentModalType='';
+function openUpgradePicker(slotIdx){
+  currentModalSlot=slotIdx; currentModalType='upgrade';
+  document.getElementById('modalSlotNum').textContent=slotIdx+1;
+  const body=document.getElementById('modalBody');
+  body.innerHTML='<input class="lib-search" id="modalSearch" placeholder="SEARCH..." oninput="filterModal()" style="margin-bottom:8px" /><div id="modalList"></div>';
+  renderModalList('');
+  document.getElementById('slotModal').classList.add('open');
+}
+function openGadgetPicker(slotIdx){
+  currentModalSlot=slotIdx; currentModalType='gadget';
+  document.getElementById('modalSlotNum').textContent='Gadget '+(slotIdx+1);
+  const body=document.getElementById('modalBody');
+  body.innerHTML='<input class="lib-search" id="modalSearch" placeholder="SEARCH GADGETS..." oninput="filterModal()" style="margin-bottom:8px" /><div id="modalList"></div>';
+  renderModalList('');
+  document.getElementById('slotModal').classList.add('open');
+}
+function openInvPicker(slotIdx){
+  currentModalSlot=slotIdx; currentModalType='invention';
+  document.getElementById('modalSlotNum').textContent='Invention '+(slotIdx+1);
+  const body=document.getElementById('modalBody');
+  body.innerHTML='<input class="lib-search" id="modalSearch" placeholder="SEARCH INVENTIONS..." oninput="filterModal()" style="margin-bottom:8px" /><div id="modalList"></div>';
+  renderModalList('');
+  document.getElementById('slotModal').classList.add('open');
+}
+function openBTPicker(slotIdx, lvl){
+  currentModalSlot=slotIdx; currentModalType='bt'+lvl;
+  document.getElementById('modalSlotNum').textContent='Breakthrough Lv'+lvl;
+  const body=document.getElementById('modalBody');
+  body.innerHTML='<div id="modalList"></div>';
+  renderModalList('');
+  document.getElementById('slotModal').classList.add('open');
+}
+function filterModal(){renderModalList(document.getElementById('modalSearch')?.value||'');}
+function renderModalList(search){
+  const el=document.getElementById('modalList');
+  el.innerHTML='';
+  const q=search.toLowerCase();
+  let items=[];
+  if(currentModalType==='upgrade') items=UPG_DB.filter(u=>!q||u.name.toLowerCase().includes(q));
+  else if(currentModalType==='gadget') items=INV_DB.filter(i=>i.type==='gadget'&&(!q||i.name.toLowerCase().includes(q)));
+  else if(currentModalType==='invention') items=INV_DB.filter(i=>i.type==='invention'&&i.level<=5&&(!q||i.name.toLowerCase().includes(q)));
+  else if(currentModalType==='bt6') items=INV_DB.filter(i=>i.level===6&&(!q||i.name.toLowerCase().includes(q)));
+  else if(currentModalType==='bt7') items=INV_DB.filter(i=>i.level===7&&(!q||i.name.toLowerCase().includes(q)));
+  items.forEach(item=>{
+    const div=document.createElement('div');
+    div.style.cssText='padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;';
+    div.onmouseenter=()=>div.style.background='rgba(74,158,202,0.07)';
+    div.onmouseleave=()=>div.style.background='';
+    const isUpg=currentModalType==='upgrade';
+    const name=isUpg?item.name:item.name;
+    const sub=isUpg?item.desc:item.desc;
+    const prereq=isUpg&&item.prereq?`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim)">Req: ${item.prereq}</div>`:'';
+    div.innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan)">${name}</div>
+      ${prereq}
+      <div style="font-size:11px;color:var(--parchment-dim);margin-top:2px;line-height:1.4">${sub.substring(0,100)}${sub.length>100?'…':''}</div>`;
+    div.onclick=()=>{assignFromModal(item.id);};
+    el.appendChild(div);
+  });
+  if(!items.length) el.innerHTML='<div style="color:var(--parchment-dim);font-family:\'Share Tech Mono\',monospace;font-size:11px;padding:10px">No results.</div>';
+}
+function assignFromModal(id){
+  if(currentModalType==='upgrade'){
+    state.equippedUpgrades[currentModalSlot]=id;
+    buildUpgradeSlots();buildActiveEffects();buildArmourEffects();updateDerived();
+    buildUpgLibrary();
+  } else if(currentModalType==='gadget'){
+    state.equippedGadgets[currentModalSlot]=id;
+    buildGadgetSlots();buildActiveEffects();updateDerived();buildInvLibrary();
+  } else if(currentModalType==='invention'){
+    state.equippedInventions[currentModalSlot]=id;
+    buildInvSlots();buildActiveEffects();updateDerived();buildInvLibrary();
+  } else if(currentModalType==='bt6'){
+    state.equippedBreakthroughs[0]=id;
+    buildBreakthroughSlots();buildActiveEffects();buildInvLibrary();
+  } else if(currentModalType==='bt7'){
+    state.equippedBreakthroughs[1]=id;
+    buildBreakthroughSlots();buildActiveEffects();buildInvLibrary();
+  }
+  refreshMaintTracker();
+  saveData(); closeModal();
+}
+function closeModal(){document.getElementById('slotModal').classList.remove('open');}
+
+// QUICK EQUIP/UNEQUIP from library
+function quickEquipGadget(id){
+  const empty=state.equippedGadgets.indexOf('');
+  if(empty>=0){state.equippedGadgets[empty]=id;}
+  else{state.equippedGadgets[3]=id;}
+  refreshAll(); saveData();
+}
+function quickUnequipGadget(id){
+  const i=state.equippedGadgets.indexOf(id);
+  if(i>=0)state.equippedGadgets[i]='';
+  refreshAll(); saveData();
+}
+function quickEquipInv(id){
+  const empty=state.equippedInventions.indexOf('');
+  if(empty>=0){state.equippedInventions[empty]=id;}
+  else{state.equippedInventions[2]=id;}
+  refreshAll(); saveData();
+}
+function quickUnequipInv(id){
+  const i=state.equippedInventions.indexOf(id);
+  if(i>=0)state.equippedInventions[i]='';
+  refreshAll(); saveData();
+}
+function quickEquipBreakthrough(id,slot){
+  state.equippedBreakthroughs[slot]=id;
+  refreshAll(); saveData();
+}
+function clearBreakthroughById(id){
+  const i=state.equippedBreakthroughs.indexOf(id);
+  if(i>=0)state.equippedBreakthroughs[i]='';
+  refreshAll(); saveData();
+}
+function quickEquipUpgrade(id){
+  const empty=state.equippedUpgrades.indexOf('');
+  if(empty>=0){state.equippedUpgrades[empty]=id;}
+  refreshAll(); saveData();
+}
+function quickUnequipUpgrade(id){
+  const i=state.equippedUpgrades.indexOf(id);
+  if(i>=0)state.equippedUpgrades[i]='';
+  refreshAll(); saveData();
+}
+function clearGadget(i){state.equippedGadgets[i]='';refreshAll();saveData();}
+function clearInv(i){state.equippedInventions[i]='';refreshAll();saveData();}
+function clearUpgrade(i){state.equippedUpgrades[i]='';refreshAll();saveData();}
+function toggleInvPip(id,p){
+  const cur=state.invPipsUsed[id]||0;
+  state.invPipsUsed[id]=(p<cur)?p:p+1;
+  const maxUses=invUses();
+  if(!state.maintNeeded) state.maintNeeded={};
+  if(state.invPipsUsed[id]>=maxUses) state.maintNeeded[id]=true;
+  buildInvSlots();buildActiveEffects();refreshMaintTracker();saveData();
+}
+function resetInv(id){
+  state.invPipsUsed[id]=0;
+  if(state.maintNeeded) state.maintNeeded[id]=false;
+  buildInvSlots();buildActiveEffects();refreshMaintTracker();saveData();
+}
+
+function doMaintenance(id){
+  state.invPipsUsed[id]=0;
+  if(!state.maintNeeded) state.maintNeeded={};
+  state.maintNeeded[id]=false;
+  buildInvSlots();buildActiveEffects();refreshMaintTracker();saveData();
+}
+function toggleBreakthrough(id,i){
+  state.breakthroughUsed[id]=!state.breakthroughUsed[id];
+  buildBreakthroughSlots();refreshMaintTracker();saveData();
+}
+function resetBreakthrough(id,i){state.breakthroughUsed[id]=false;buildBreakthroughSlots();refreshMaintTracker();saveData();}
+
+// ================================================================
+// FEATURES
+// ================================================================
+function buildFeatures(){
+  const core=document.getElementById('coreFeaturesPanel');
+  const sub=document.getElementById('subclassFeaturesPanel');
+  if(!core||!sub) return;
+  core.innerHTML=CORE_FEATURES.map(f=>`
+    <div style="background:var(--navy);border:1px solid var(--border);padding:10px 12px;margin-bottom:7px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:1px;margin-bottom:4px">${f.name}</div>
+      <div style="font-size:12px;color:var(--parchment-dim);line-height:1.5">${f.desc}</div>
+    </div>`).join('');
+  sub.innerHTML=ARMOURER_FEATURES.map(f=>`
+    <div style="background:var(--navy);border:1px solid var(--border);padding:10px 12px;margin-bottom:7px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:1px;margin-bottom:4px">${f.name}</div>
+      <div style="font-size:12px;color:var(--parchment-dim);line-height:1.5">${f.desc}</div>
+    </div>`).join('');
+}
+
+// ================================================================
+// INTERACTIONS
+// ================================================================
+function onAbilityChange(ab,val){
+  const n=Math.min(30,Math.max(1,parseInt(val)||10));
+  state.abilities[ab]=n;
+  // input may not exist if boosted (replaced with static div)
+  const inp=document.getElementById('ab_'+ab);
+  if(inp) inp.value=n;
+  buildAbilities();buildSavingThrows();buildSkills();buildPAPips();buildMountedPips();updateDerived();saveData();
+}
+function toggleSaveProf(ab){
+  const i=state.profSaves.indexOf(ab);
+  if(i>=0)state.profSaves.splice(i,1); else state.profSaves.push(ab);
+  buildSavingThrows();saveData();
+}
+function cycleSkillProf(name){
+  state.skills[name]=((state.skills[name]||0)+1)%3;
+  buildSkills();updateDerived();saveData();
+}
+function adjustHP(sign){
+  const change=parseInt(document.getElementById('hpChange').value)||0;
+  const max=parseInt(document.getElementById('hpMax').value)||1;
+  let cur=parseInt(document.getElementById('hpCurrent').value)||0;
+  cur=Math.min(max,Math.max(0,cur+sign*change));
+  document.getElementById('hpCurrent').value=cur;
+  document.getElementById('hpChange').value='';
+  state.hpCurrent=cur; updateHPBar(); saveData();
+}
+function fullHeal(){
+  const max=document.getElementById('hpMax').value;
+  document.getElementById('hpCurrent').value=max;
+  state.hpCurrent=parseInt(max); updateHPBar(); saveData();
+}
+function addAttack(){
+  const name=prompt('Attack name?'); if(!name)return;
+  const bonus=prompt('Attack bonus (e.g. +7 or STR+PROF)?')||'+0';
+  const dmg=prompt('Damage dice (e.g. 1d8+3)?')||'—';
+  const type=prompt('Damage type?')||'—';
+  state.attacks.push({name,bonus,dmg,type});
+  buildAttacks();saveData();
+}
+function removeAttack(i){state.attacks.splice(i,1);buildAttacks();saveData();}
+
+// ================================================================
+// ROLLING
+// ================================================================
+let rollTO;
+function showRoll(label,result,detail){
+  const d=document.getElementById('rollDisplay');
+  document.getElementById('rollLabel').textContent=label;
+  document.getElementById('rollResult').textContent=result+(detail?' ('+detail+')':'');
+  d.classList.add('show');
+  clearTimeout(rollTO);
+  rollTO=setTimeout(()=>d.classList.remove('show'),3000);
+}
+function rollDie(sides,label){const r=Math.floor(Math.random()*sides)+1;showRoll(label||'d'+sides,r);return r;}
+function rollCheck(ab){
+  const score = effectiveAbility(ab);
+  const m=mod(score); const roll=Math.floor(Math.random()*20)+1;
+  showRoll(ab+' Check',roll+m,`d20(${roll})${ms(m)}`);
+}
+function rollSave(ab){
+  const b=getSaveBonus(ab); const roll=Math.floor(Math.random()*20)+1;
+  showRoll(ab+' Save',roll+b,`d20(${roll})${ms(b)}`);
+}
+function rollSkill(name){
+  const b=getSkillBonus(name); const roll=Math.floor(Math.random()*20)+1;
+  showRoll(name,roll+b,`d20(${roll})${ms(b)}`);
+}
+
+function togglePanel(header){
+  const body = header.nextElementSibling;
+  if(!body || !body.classList.contains('panel-body')) return;
+  const collapsed = body.classList.toggle('collapsed');
+  header.classList.toggle('open', !collapsed);
+  // persist
+  const key = 'panel_' + (header.dataset.panelKey || header.textContent.trim().substring(0,30));
+  try{ localStorage.setItem(key, collapsed ? '1' : '0'); } catch(e){}
+}
+
+function wirePanelHeaders(){
+  document.querySelectorAll('.panel-header').forEach(h => {
+    // add chevron if not already there
+    if(!h.querySelector('.panel-collapse-icon')){
+      const icon = document.createElement('span');
+      icon.className = 'panel-collapse-icon';
+      icon.textContent = '▾';
+      h.appendChild(icon);
+    }
+    // restore saved state
+    const key = 'panel_' + (h.dataset.panelKey || h.textContent.trim().substring(0,30));
+    let saved;
+    try{ saved = localStorage.getItem(key); } catch(e){}
+    const body = h.nextElementSibling;
+    if(body && body.classList.contains('panel-body')){
+      if(saved === '1'){
+        body.classList.add('collapsed');
+      } else {
+        h.classList.add('open');
+      }
+    }
+    h.addEventListener('click', function(e){
+      // don't collapse if a button inside header was clicked
+      if(e.target.closest('button, input, select, a')) return;
+      togglePanel(h);
+    });
+  });
+}
+
+
+// ================================================================
+// BREAKDOWN POPUP
+// ================================================================
+function showBreakdown(type,event){
+  if(event) event.stopPropagation();
+  const pop=document.getElementById('bdPopup');
+  const data=getBreakdownData(type);
+  if(!data) return;
+  const allTotal=data.components.reduce((s,c)=>s+c.value,0);
+  const sn=n=>(n>=0?'+':'')+n;
+  const parts=data.components.map(c=>c.isBase?String(c.value):sn(c.value)).join(' ');
+  pop.innerHTML=`
+    <div class="bd-header">
+      <span class="bd-title">${data.title}</span>
+      <button class="bd-close" onclick="closeBreakdown()">✕</button>
+    </div>
+    <div class="bd-total-row">
+      <span class="bd-total-num">${sn(allTotal)}</span>
+      <span class="bd-total-label">${data.subtitle||'Total'}</span>
+    </div>
+    <div class="bd-rows">
+      ${data.components.map(c=>`
+        <div class="bd-row">
+          <span class="bd-row-icon">${c.icon||'·'}</span>
+          <span class="bd-row-label">${c.label}</span>
+          <span class="bd-row-source">${c.source||''}</span>
+          <span class="bd-row-val ${c.isBase?'base':c.value>0?'pos':c.value<0?'neg':'zero'}">${c.isBase?c.value:sn(c.value)}</span>
+        </div>`).join('')}
+    </div>
+    <div class="bd-formula">${parts} = <strong style="color:var(--brass)">${sn(allTotal)}</strong></div>`;
+  pop.style.display='block'; pop.style.transform='';
+  if(event&&event.currentTarget){
+    const r=event.currentTarget.getBoundingClientRect();
+    let l=r.left,t=r.bottom+6;
+    if(l+340>window.innerWidth-8)l=window.innerWidth-348;
+    const ph=pop.offsetHeight||280;
+    if(t+ph>window.innerHeight-8)t=r.top-ph-6;
+    pop.style.left=Math.max(4,l)+'px';pop.style.top=Math.max(4,t)+'px';
+  } else {
+    pop.style.left='50%';pop.style.top='50%';pop.style.transform='translate(-50%,-50%)';
+  }
+}
+function closeBreakdown(){const p=document.getElementById('bdPopup');p.style.display='none';p.style.transform='';}
+document.addEventListener('click',e=>{const p=document.getElementById('bdPopup');if(p&&p.style.display!=='none'&&!p.contains(e.target))closeBreakdown();});
+
+function getBreakdownData(type){
+  const sc=k=>state.abilities[k], m=k=>Math.floor((effectiveAbility(k)-10)/2);
+  const AN={STR:'Strength',DEX:'Dexterity',CON:'Constitution',INT:'Intelligence',WIS:'Wisdom',CHA:'Charisma'};
+  if(type.startsWith('skill:')){
+    const name=type.replace('skill:',''),s=SKILLS_DEF.find(x=>x.name===name);
+    if(!s)return null;
+    const p=state.skills[name]||0;
+    const comps=[{icon:'🎲',label:`${s.ab} mod (score: ${sc(s.ab)})`,source:'ability',value:m(s.ab),isBase:true}];
+    if(p===1)comps.push({icon:'⚪',label:'Proficiency',source:'Lvl 13',value:PROF});
+    if(p===2)comps.push({icon:'🟡',label:'Expertise (Prof×2)',source:'Engineer',value:PROF*2});
+    if(name==='History')comps.push({icon:'🍄',label:'Artificer\'s Lore (vs magic/alchemy/tech, adv.)',source:'Rock Gnome',value:0});
+    return {title:name,subtitle:'Skill Check Bonus',components:comps};
+  }
+  if(type.startsWith('save:')){
+    const k=type.replace('save:',''),base=m(k),prof=state.profSaves.includes(k)?PROF:0;
+    const pb=['STR','DEX','CON'].includes(k)&&state.armoured?physSaveBonus():0;
+    const comps=[{icon:'🎲',label:`${AN[k]} mod (score: ${sc(k)})`,source:'ability',value:base,isBase:true}];
+    if(prof)comps.push({icon:'⚪',label:'Proficiency',source:'Lvl 13',value:PROF});
+    if(pb)comps.push({icon:'🛡',label:'Shock-Absorbing Underlay',source:'upgrade',value:pb});
+    if(['INT','WIS','CHA'].includes(k))comps.push({icon:'🍄',label:'Gnome Cunning: adv vs magic (not numeric)',source:'Rock Gnome',value:0});
+    return {title:AN[k]+' Save',subtitle:'Save Bonus',components:comps};
+  }
+  if(type==='ac'){
+    const base = state.baseAC;
+    const dexM = m('DEX');
+    const name = state.armourName || 'Armour';
+
+    // Determine DEX contribution hint based on armour name
+    const heavy = ['plate','splint','chain mail','ring mail','chain shirt'].some(h=>name.toLowerCase().includes(h.replace(' mail','')));
+    const medium = ['scale','breastplate','half plate','hide'].some(h=>name.toLowerCase().includes(h));
+    let dexNote = '';
+    if(name.toLowerCase().includes('plate') || name.toLowerCase().includes('splint') || name.toLowerCase().includes('chain mail') || name.toLowerCase().includes('ring mail')){
+      dexNote = 'Heavy armour — DEX not added to AC';
+    } else if(medium || name.toLowerCase().includes('scale') || name.toLowerCase().includes('hide') || name.toLowerCase().includes('breastplate')){
+      const dexCapped = Math.min(dexM, 2);
+      dexNote = `Medium armour — DEX capped at +2 (your DEX mod: ${ms(dexM)}, contributing: ${ms(dexCapped)})`;
+    } else {
+      dexNote = `Light armour — full DEX mod added (${ms(dexM)})`;
+    }
+
+    const comps = [
+      {icon:'🪖', label:`${name} (base AC)`, source:'equipment', value:base, isBase:true},
+    ];
+
+    // DEX contribution (informational — already baked into baseAC if you entered full AC)
+    comps.push({icon:'💡', label:dexNote + ' — already included in your base if you entered total AC', source:'note', value:0});
+
+    // Tinker note
+    comps.push({icon:'🔧', label:'Tinker +1 AC (if used on armour this rest)', source:'Engineer Lvl 2', value:0});
+
+    if(state.armoured){
+      let hasUpgradeBonus = false;
+      state.equippedUpgrades.forEach(uid=>{
+        const u=getUpgrade(uid);
+        if(!u) return;
+        u.statEffects.forEach(e=>{
+          if(e.type==='ac'){
+            comps.push({icon:'⚙', label:u.name, source:'armour upgrade', value:e.value});
+            hasUpgradeBonus = true;
+          }
+        });
+      });
+      if(!hasUpgradeBonus) comps.push({icon:'🛡', label:'Powered Armour active (no AC upgrades equipped)', source:'Armourer', value:0});
+    } else {
+      comps.push({icon:'💨', label:'Powered Armour OFF — upgrade bonuses not applied', source:'', value:0});
+    }
+
+    return {title:'Armour Class', subtitle:'AC', components:comps};
+  }
+  if(type==='invdc'){
+    return {title:'Invention Save DC',subtitle:'8 + Prof + INT',components:[
+      {icon:'🔢',label:'Base',source:'rule',value:8,isBase:true},
+      {icon:'⚪',label:'Proficiency',source:'Lvl 13',value:PROF},
+      {icon:'🎲',label:`INT mod (score: ${sc('INT')})`,source:'ability',value:m('INT')},
+    ]};
+  }
+  if(type==='invatk'){
+    return {title:'Invention Attack',subtitle:'Prof + INT',components:[
+      {icon:'⚪',label:'Proficiency',source:'Lvl 13',value:PROF,isBase:true},
+      {icon:'🎲',label:`INT mod (score: ${sc('INT')})`,source:'ability',value:m('INT')},
+    ]};
+  }
+  if(type==='initiative'){
+    return {title:'Initiative',subtitle:'DEX modifier',components:[
+      {icon:'🎲',label:`DEX mod (score: ${sc('DEX')})`,source:'ability',value:m('DEX'),isBase:true},
+    ]};
+  }
+  if(type==='speed'){
+    const comps=[{icon:'👟',label:'Base speed (Rock Gnome)',source:'race',value:state.baseSpeed,isBase:true}];
+    if(state.armoured)state.equippedUpgrades.forEach(uid=>{const u=getUpgrade(uid);if(!u)return;u.statEffects.forEach(e=>{if(e.type==='speed')comps.push({icon:'⚙',label:u.name,source:'upgrade',value:e.value});});});
+    return {title:'Speed',subtitle:'ft per turn',components:comps};
+  }
+  if(type.startsWith('ability:')){
+    const k=type.replace('ability:',''),base=sc(k);
+    const comps=[{icon:'🎲',label:'Base score',source:'character',value:base,isBase:true}];
+    if(k==='STR'&&state.armoured){const eff=effectiveSTR();if(eff>base)comps.push({icon:'⚙',label:`Powered Armour → ${eff}`,source:state.equippedUpgrades.includes('enhanced_strength')?'Enhanced Strength':'Powered Armour',value:eff-base});}
+    const finalM=k==='STR'&&state.armoured?Math.floor((effectiveSTR()-10)/2):m(k);
+    return {title:AN[k],subtitle:`Score → modifier ${finalM>=0?'+':''}${finalM}`,components:comps};
+  }
+  return null;
+}
+
+function showTab(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  const map={main:0,library:1,loadout:2,features:3,notes:4};
+  document.querySelectorAll('.tab')[map[name]].classList.add('active');
+  if(name==='library') { buildLibrary(); wirePanelHeaders(); }
+  if(name==='loadout') { buildLoadout(); wirePanelHeaders(); }
+  if(name==='features') { buildFeatures(); wirePanelHeaders(); }
+}
+
+// ================================================================
+// SAVE / LOAD
+// ================================================================
+function saveData(){
+  state.charName=document.getElementById('charName').value;
+  // IMPORTANT: never read baseAC/baseSpeed from the display elements —
+  // those already include armour bonuses. The raw base values live only in state.
+  state.hpCurrent=parseInt(document.getElementById('hpCurrent').value)||0;
+  state.hpMax=parseInt(document.getElementById('hpMax').value)||85;
+  state.tempHP=parseInt(document.getElementById('tempHP').value)||0;
+  state.notes.combat=document.getElementById('combatNotes').value;
+  state.notes.inventory=document.getElementById('inventoryNotes').value;
+  state.notes.backstory=document.getElementById('backstoryNotes').value;
+  state.notes.session=document.getElementById('sessionNotes').value;
+  try{localStorage.setItem('engineerSheet2',JSON.stringify(state));}catch(e){}
+  const ind=document.getElementById('saveIndicator');
+  ind.style.display='block'; setTimeout(()=>ind.style.display='none',1200);
+}
+
+function loadData(){
+  try{
+    const raw=localStorage.getItem('engineerSheet2');
+    if(raw){const s=JSON.parse(raw);Object.assign(state,s);}
+  }catch(e){}
+}
+
+function refreshAll(){
+  buildAbilities(); buildSavingThrows(); buildSkills();
+  buildConditions(); buildHitDice(); buildPAPips(); buildMountedPips();
+  updateDerived(); updateHPBar(); buildArmourEffects();
+  buildLibrary(); buildLoadout(); refreshMaintTracker(); buildMaintMaterials();
+}
+
+// ================================================================
+// INIT
+// ================================================================
+function init(){
+  loadData();
+  // Ensure new state fields exist after load
+  if(!state.weapons) state.weapons=[];
+  if(!state.maintNeeded) state.maintNeeded={};
+  if(!state.maintMaterials) state.maintMaterials={count:0};
+  // Default skills
+  if(!Object.keys(state.skills).length){
+    ['Arcana','History','Investigation','Medicine','Nature'].forEach(s=>state.skills[s]=1);
+  }
+  // Restore
+  document.getElementById('charName').value=state.charName||'[Character Name]';
+  document.getElementById('hpCurrent').value=state.hpCurrent;
+  document.getElementById('hpMax').value=state.hpMax;
+  document.getElementById('tempHP').value=state.tempHP||0;
+  document.getElementById('combatNotes').value=state.notes?.combat||'';
+  document.getElementById('inventoryNotes').value=state.notes?.inventory||'';
+  document.getElementById('backstoryNotes').value=state.notes?.backstory||'';
+  document.getElementById('sessionNotes').value=state.notes?.session||'';
+  document.getElementById('armourToggle').checked=state.armoured||false;
+  // Restore editable base values — ensure speed default is 25 (gnome), not 30
+  if(!state.baseSpeed || state.baseSpeed === 30) state.baseSpeed = 25;
+  document.getElementById('baseACInput').value=state.baseAC||16;
+  document.getElementById('baseSpeedInput').value=state.baseSpeed||25;
+  document.getElementById('armourNameInput').value=state.armourName||'Chain Mail';
+
+  buildAbilities(); buildSavingThrows(); buildSkills();
+  buildConditions(); buildHitDice(); buildPAPips(); buildMountedPips();
+  updateDerived(); updateHPBar();
+  applyArmourMode();
+  wirePanelHeaders();
+  refreshMaintTracker();
+  buildMaintMaterials();
+
+  // Live HP update
+  document.getElementById('hpCurrent').addEventListener('input',()=>{updateHPBar();saveData();});
+  document.getElementById('hpMax').addEventListener('input',()=>{updateHPBar();saveData();});
+  document.getElementById('charName').addEventListener('change',saveData);
+
+  // Success — remove diagnostic banner
+  const diag=document.getElementById('jsDiagBanner');
+  if(diag) diag.remove();
+}
+
+let __initDone=false;
+function __safeInit(){
+  if(__initDone) return;
+  try{
+    init();
+    __initDone=true;
+  }catch(e){
+    console.error(e);
+    const box=document.createElement('div');
+    box.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#3a0a0a;color:#ffcccc;'+
+      'font-family:monospace;font-size:11px;padding:8px 12px;z-index:9999;border-top:2px solid #c84030;'+
+      'max-height:40vh;overflow:auto;white-space:pre-wrap;';
+    box.textContent='Init error: '+e.message+'\n'+(e.stack||'');
+    document.body.appendChild(box);
+  }
+}
+// Try every reasonable trigger — belt and braces for odd WebKit/file:// behavior
+document.addEventListener('DOMContentLoaded', __safeInit);
+window.addEventListener('load', __safeInit);
+if(document.readyState==='complete' || document.readyState==='interactive'){
+  __safeInit();
+}
+
+</script>
+</body>
+</html>
