@@ -485,6 +485,7 @@ body{
 <!-- TABS -->
 <div class="tabs">
   <div class="tab active" onclick="showTab('main')">⚙ Main</div>
+  <div class="tab" onclick="showTab('actions')">🎯 Actions</div>
   <div class="tab" onclick="showTab('library')">📚 Library</div>
   <div class="tab" onclick="showTab('loadout')">🔩 Loadout</div>
   <div class="tab" onclick="showTab('features')">📋 Features</div>
@@ -517,7 +518,7 @@ body{
     <div>
       <!-- STATS ROW -->
       <div class="stats-row">
-        <div class="stat-box" id="boxAC" style="max-width:90px" onclick="showBreakdown('ac',event)" title="Click for AC breakdown">
+        <div class="stat-box" id="boxAC" style="max-width:110px" onclick="showBreakdown('ac',event)" title="Click for AC breakdown">
           <span class="stat-label">AC ❓</span>
           <div class="ac-shield">
             <svg width="60" height="68" viewBox="0 0 64 72">
@@ -526,18 +527,26 @@ body{
             </svg>
             <div class="ac-value" id="acDisplay">—</div>
           </div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);text-align:center;margin-top:2px">
-            Base: <input id="baseACInput" type="number" value="16" min="0" max="30"
-              style="width:32px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:10px;text-align:center;outline:none;"
-              onclick="event.stopPropagation()"
-              onchange="state.baseAC=parseInt(this.value)||10;updateDerived();buildArmourEffects();saveData()" />
-          </div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);text-align:center;margin-top:2px">
-            <input id="armourNameInput" type="text" value="Chain Mail"
-              style="width:68px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:8px;text-align:center;outline:none;letter-spacing:1px;"
-              placeholder="armour type"
-              onclick="event.stopPropagation()"
-              onchange="state.armourName=this.value;saveData()" />
+          <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--parchment-dim);text-align:center;margin-top:3px" id="acActiveLabel">—</div>
+          <div style="display:flex;gap:6px;justify-content:center;margin-top:3px;flex-wrap:wrap" onclick="event.stopPropagation()">
+            <div style="text-align:center;${''}">
+              <div style="font-size:7px;color:var(--green);letter-spacing:1px">⚙ POWERED</div>
+              <input id="armourNameInput" type="text" value="Chain Mail"
+                style="width:62px;background:transparent;border:none;border-bottom:1px dashed var(--green);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:8px;text-align:center;outline:none;letter-spacing:1px;"
+                placeholder="armour" onchange="state.armourName=this.value;updateDerived();saveData()" />
+              <input id="baseACInput" type="number" value="16" min="0" max="30"
+                style="width:32px;background:transparent;border:none;border-bottom:1px dashed var(--green);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:10px;text-align:center;outline:none;"
+                onchange="state.baseAC=parseInt(this.value)||10;updateDerived();buildArmourEffects();saveData()" />
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:7px;color:var(--brass-dim);letter-spacing:1px">UNARMOURED</div>
+              <input id="unarmouredArmourNameInput" type="text" value="Leather Armour"
+                style="width:62px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:8px;text-align:center;outline:none;letter-spacing:1px;"
+                placeholder="armour" onchange="state.unarmouredArmourName=this.value;updateDerived();saveData()" />
+              <input id="unarmouredACInput" type="number" value="11" min="0" max="30"
+                style="width:32px;background:transparent;border:none;border-bottom:1px dashed var(--brass-dim);color:var(--brass-dim);font-family:'Share Tech Mono',monospace;font-size:10px;text-align:center;outline:none;"
+                onchange="state.unarmouredAC=parseInt(this.value)||10;updateDerived();saveData()" />
+            </div>
           </div>
         </div>
         <div class="stat-box bd-clickable" onclick="showBreakdown('initiative',event)" title="Click for breakdown"><span class="stat-label">Initiative ❓</span><div class="stat-value" id="initiativeVal">+0</div></div>
@@ -715,6 +724,41 @@ body{
       <div class="panel">
         <div class="panel-header">🔧 Maintenance Tracker</div>
         <div class="panel-body" id="maintTrackerPanel"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ACTIONS TAB ===== -->
+<div class="page" id="tab-actions">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div>
+      <div class="panel">
+        <div class="panel-header">⚔ Attacks</div>
+        <div class="panel-body">
+          <div class="attack-row header" style="font-family:'Share Tech Mono',monospace">
+            <span>Name</span><span style="text-align:center">Atk</span><span style="text-align:center">Dmg</span><span style="text-align:center">Type</span><span></span>
+          </div>
+          <div id="actionsAttacksList"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">🎯 Actions <span style="font-size:9px;color:var(--parchment-dim);font-weight:normal">(1 Action)</span></div>
+        <div class="panel-body" id="actionsMainList"></div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <div class="panel-header">⚡ Bonus Actions</div>
+        <div class="panel-body" id="actionsBonusList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">🔄 Reactions</div>
+        <div class="panel-body" id="actionsReactionList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">🛠 Free / Other</div>
+        <div class="panel-body" id="actionsFreeList"></div>
       </div>
     </div>
   </div>
@@ -1265,6 +1309,8 @@ let state = {
   armoured:false,
   baseAC:16,
   armourName:'Chain Mail',
+  unarmouredAC:11,
+  unarmouredArmourName:'Leather Armour',
   baseSpeed:25,
   equippedGadgets:['firearm','electroshock','icy_burst','grappling_cable'],
   equippedInventions:['discharge_bolt','mortar','stimulant'],
@@ -1306,7 +1352,7 @@ function effectiveSTR(){
 
 // Effective AC
 function effectiveAC(){
-  let ac = state.baseAC;
+  let ac = state.armoured ? state.baseAC : (state.unarmouredAC ?? 11);
   if(state.armoured){
     state.equippedUpgrades.forEach(uid=>{
       const u = getUpgrade(uid);
@@ -1315,6 +1361,10 @@ function effectiveAC(){
     });
   }
   return ac;
+}
+
+function currentArmourName(){
+  return state.armoured ? (state.armourName||'Powered Armour') : (state.unarmouredArmourName||'Leather Armour');
 }
 
 // Effective Speed
@@ -1688,63 +1738,229 @@ function adjustWeaponCharges(i,delta){
   saveData();
 }
 
-function buildAttacks(){
-  const el=document.getElementById('attacksList');
-  el.innerHTML='';
-  state.attacks.forEach((a,i)=>{
-    // Resolve bonus string
-    let bStr=a.bonus;
-    if(bStr==='STR+PROF'){const s=state.armoured?effectiveSTR():state.abilities.STR;bStr=ms(mod(s)+PROF);}
-    else if(bStr==='INT+PROF')bStr=ms(mod(state.abilities.INT)+PROF);
-    const row=document.createElement('div');
-    row.className='attack-row';
-    row.innerHTML=`<span style="color:var(--white)">${a.name}</span>
-      <span style="color:var(--cyan);text-align:center">${bStr}</span>
-      <span style="color:var(--parchment-dim);text-align:center">${a.dmg}</span>
-      <span style="color:var(--parchment-dim);text-align:center;font-size:10px">${a.type}</span>
-      <span style="color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px" onclick="removeAttack(${i})">✕</span>`;
-    el.appendChild(row);
+// ================================================================
+// ACTIONS TAB — categorized view of gadgets/inventions/breakthroughs
+// by activation type, plus key class features
+// ================================================================
+function categorizeActivation(activation){
+  if(!activation) return 'free';
+  const a=activation.toLowerCase();
+  if(a.startsWith('1 bonus')) return 'bonus';
+  if(a.startsWith('1 reaction')) return 'reaction';
+  if(a.startsWith('1 action')) return 'action';
+  return 'free'; // 1 minute, 10 minutes, 1 hour etc.
+}
+
+// Render a single invention/gadget as a compact action card with use-pips if applicable
+function renderActionCard(inv, opts){
+  opts = opts || {};
+  const maxUses = opts.maxUses; // undefined for gadgets (at-will)
+  const id = inv.id;
+  const used = state.invPipsUsed[id]||0;
+  const maintFlag = maxUses ? (state.maintNeeded[id] || used>=maxUses) : false;
+  let pipsHTML='';
+  if(maxUses){
+    for(let p=0;p<maxUses;p++){
+      pipsHTML+=`<div class="use-pip${p<used?' used':''}" style="width:18px;height:18px" onclick="event.stopPropagation();toggleInvPip('${id}',${p})" title="Use ${p+1}"></div>`;
+    }
+  }
+  const card=document.createElement('div');
+  card.className='inv-card';
+  card.innerHTML=`
+    <div class="inv-card-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--cyan);">${inv.name}</div>
+          <span class="lib-tag lv${inv.level}">${inv.level===0?'GADGET':'LV'+inv.level}</span>
+          ${opts.tag?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px">${opts.tag}</span>`:''}
+          ${maintFlag?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--red);letter-spacing:1px;animation:pulse 1.5s ease-in-out infinite">⚠ MAINT</span>`:''}
+        </div>
+        ${maxUses?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${maintFlag?'var(--red)':'var(--parchment-dim)'}">${maxUses-used}/${maxUses} uses</span>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">${pipsHTML}</div>
+          <button class="btn btn-brass" style="font-size:9px;padding:2px 7px;margin-left:auto" onclick="event.stopPropagation();doMaintenance('${id}')" title="Reset uses, clear maintenance flag">✓ MAINT</button>
+        </div>`:`<div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--green)">AT-WILL</div>`}
+      </div>
+      <span style="color:var(--parchment-dim);font-size:11px;margin-left:6px">▾</span>
+    </div>
+    <div class="inv-card-body">
+      <div style="font-size:11px;color:var(--parchment-dim);margin-bottom:7px;line-height:1.5">${inv.desc}</div>
+      <div class="lib-meta">
+        <span class="lib-meta-tag">⏱ ${inv.activation}</span>
+        <span class="lib-meta-tag">📍 ${inv.range}</span>
+        <span class="lib-meta-tag">⌛ ${inv.duration}</span>
+      </div>
+    </div>`;
+  return card;
+}
+
+// Render a static class-feature card (no pips, just description)
+function renderFeatureCard(name, desc, tag){
+  const card=document.createElement('div');
+  card.className='inv-card';
+  card.innerHTML=`
+    <div class="inv-card-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+      <div style="display:flex;gap:7px;align-items:center;flex:1;min-width:0;flex-wrap:wrap">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--brass)">${name}</div>
+        ${tag?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px">${tag}</span>`:''}
+      </div>
+      <span style="color:var(--parchment-dim);font-size:11px">▾</span>
+    </div>
+    <div class="inv-card-body">
+      <div style="font-size:11px;color:var(--parchment-dim);line-height:1.5">${desc}</div>
+    </div>`;
+  return card;
+}
+
+function buildActionsTab(){
+  const mainEl=document.getElementById('actionsMainList');
+  const bonusEl=document.getElementById('actionsBonusList');
+  const reactionEl=document.getElementById('actionsReactionList');
+  const freeEl=document.getElementById('actionsFreeList');
+  if(!mainEl) return;
+  mainEl.innerHTML=''; bonusEl.innerHTML=''; reactionEl.innerHTML=''; freeEl.innerHTML='';
+
+  const maxUses=invUses();
+
+  // Equipped gadgets (at-will, no pips)
+  state.equippedGadgets.forEach(id=>{
+    if(!id) return;
+    const inv=getInv(id);
+    if(!inv) return;
+    const cat=categorizeActivation(inv.activation);
+    const card=renderActionCard(inv, {tag:'GADGET'});
+    (cat==='bonus'?bonusEl:cat==='reaction'?reactionEl:cat==='free'?freeEl:mainEl).appendChild(card);
   });
-  // Auto-add equipped weapons from Loadout
-  if(!state.weapons) state.weapons=[];
-  state.weapons.forEach((w,i)=>{
-    const bStr = resolveBonus(w.bonus);
-    const row=document.createElement('div');
-    row.className='attack-row';
-    const maxC=w.maxCharges||1, used=w.chargesUsed||0;
-    const remaining=maxC-used;
-    // Charge pips, clickable to mark/unmark a charge as used
-    let chargePipsHTML='';
-    if(w.hasCharges){
-      for(let p=0;p<maxC;p++){
-        chargePipsHTML+=`<div class="use-pip${p<used?' used':''}" style="width:13px;height:13px" onclick="toggleWeaponCharge(${i},${p})" title="Charge ${p+1}${p<used?' (used)':' (available)'}"></div>`;
+
+  // Equipped inventions (limited uses, with pips)
+  state.equippedInventions.forEach(id=>{
+    if(!id) return;
+    const inv=getInv(id);
+    if(!inv) return;
+    const cat=categorizeActivation(inv.activation);
+    const card=renderActionCard(inv, {maxUses, tag:'INVENTION'});
+    (cat==='bonus'?bonusEl:cat==='reaction'?reactionEl:cat==='free'?freeEl:mainEl).appendChild(card);
+  });
+
+  // Equipped breakthroughs (1 use each, treat max as 1)
+  state.equippedBreakthroughs.forEach(id=>{
+    if(!id) return;
+    const inv=getInv(id);
+    if(!inv) return;
+    const cat=categorizeActivation(inv.activation);
+    // breakthroughs use breakthroughUsed (boolean), not invPipsUsed — render custom
+    const used=state.breakthroughUsed[id]?1:0;
+    const card=document.createElement('div');
+    card.className='inv-card';
+    card.innerHTML=`
+      <div class="inv-card-hdr" onclick="this.nextElementSibling.classList.toggle('open')">
+        <div style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--cyan)">${inv.name}</div>
+            <span class="lib-tag lv${inv.level}">LV${inv.level}</span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px">BREAKTHROUGH</span>
+            ${used?`<span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--red);letter-spacing:1px;animation:pulse 1.5s ease-in-out infinite">⚠ MAINT</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:${used?'var(--red)':'var(--parchment-dim)'}">${1-used}/1 uses</span>
+            <div class="use-pip${used?' used':''}" style="width:18px;height:18px" onclick="event.stopPropagation();toggleBreakthrough('${id}',0)"></div>
+            <button class="btn btn-brass" style="font-size:9px;padding:2px 7px;margin-left:auto" onclick="event.stopPropagation();resetBreakthrough('${id}',0)">✓ MAINT</button>
+          </div>
+        </div>
+        <span style="color:var(--parchment-dim);font-size:11px;margin-left:6px">▾</span>
+      </div>
+      <div class="inv-card-body">
+        <div style="font-size:11px;color:var(--parchment-dim);margin-bottom:7px;line-height:1.5">${inv.desc}</div>
+        <div class="lib-meta">
+          <span class="lib-meta-tag">⏱ ${inv.activation}</span>
+          <span class="lib-meta-tag">📍 ${inv.range}</span>
+          <span class="lib-meta-tag">⌛ ${inv.duration}</span>
+        </div>
+      </div>`;
+    (cat==='bonus'?bonusEl:cat==='reaction'?reactionEl:cat==='free'?freeEl:mainEl).appendChild(card);
+  });
+
+  // Key class features as static reference cards
+  const intM = mod(state.abilities.INT);
+  const paUses = Math.max(1, intM);
+  bonusEl.appendChild(renderFeatureCard('Potent Aptitude', `Bonus action: give an ally a Potent Aptitude die (d10 at Lvl 13) to add to one roll within 10 minutes. Uses = INT mod (min 1) = <strong>${paUses}/short or long rest</strong>.`, 'CLASS FEATURE'));
+  if(state.armoured){
+    bonusEl.appendChild(renderFeatureCard('Mounted Weapon', `When you take the Attack action, make one weapon attack as a bonus action. Uses = INT mod (min 1) = <strong>${Math.max(1,intM)}</strong>. Recharges on armour maintenance.`, 'ARMOURER · POWERED'));
+  }
+  reactionEl.appendChild(renderFeatureCard('Damage Absorption', `Reaction: expend 1 Potent Aptitude die to reduce incoming damage by (die roll + INT mod, min 1).`, 'ARMOURER FEATURE'));
+  freeEl.appendChild(renderFeatureCard('Tinker', `Once per long rest: enhance one weapon (+1 attack/damage) or armour (+1 AC) until your next long rest.`, 'CLASS FEATURE · LONG REST'));
+
+  // If nothing equipped at all, show a hint
+  [mainEl,bonusEl,reactionEl,freeEl].forEach(el=>{
+    if(el.children.length===0){
+      el.innerHTML='<div style="color:var(--parchment-dim);font-family:\'Share Tech Mono\',monospace;font-size:11px;text-align:center;padding:8px">Nothing here yet.</div>';
+    }
+  });
+
+  // Make sure attacks list is current too
+  buildAttacks();
+}
+
+function buildAttacks(){
+  ['attacksList','actionsAttacksList'].forEach(elId=>{
+    const el=document.getElementById(elId);
+    if(!el) return;
+    el.innerHTML='';
+    state.attacks.forEach((a,i)=>{
+      // Resolve bonus string
+      let bStr=a.bonus;
+      if(bStr==='STR+PROF'){const s=state.armoured?effectiveSTR():state.abilities.STR;bStr=ms(mod(s)+PROF);}
+      else if(bStr==='INT+PROF')bStr=ms(mod(state.abilities.INT)+PROF);
+      const row=document.createElement('div');
+      row.className='attack-row';
+      row.innerHTML=`<span style="color:var(--white)">${a.name}</span>
+        <span style="color:var(--cyan);text-align:center">${bStr}</span>
+        <span style="color:var(--parchment-dim);text-align:center">${a.dmg}</span>
+        <span style="color:var(--parchment-dim);text-align:center;font-size:10px">${a.type}</span>
+        <span style="color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:11px" onclick="removeAttack(${i})">✕</span>`;
+      el.appendChild(row);
+    });
+    // Auto-add equipped weapons from Loadout
+    if(!state.weapons) state.weapons=[];
+    state.weapons.forEach((w,i)=>{
+      const bStr = resolveBonus(w.bonus);
+      const row=document.createElement('div');
+      row.className='attack-row';
+      const maxC=w.maxCharges||1, used=w.chargesUsed||0;
+      const remaining=maxC-used;
+      // Charge pips, clickable to mark/unmark a charge as used
+      let chargePipsHTML='';
+      if(w.hasCharges){
+        for(let p=0;p<maxC;p++){
+          chargePipsHTML+=`<div class="use-pip${p<used?' used':''}" style="width:13px;height:13px" onclick="toggleWeaponCharge(${i},${p})" title="Charge ${p+1}${p<used?' (used)':' (available)'}"></div>`;
+        }
       }
-    }
-    const chargeWarn = w.hasCharges && remaining<=0
-      ? `<span style="color:var(--red);font-size:9px;animation:pulse 1.5s ease-in-out infinite;margin-left:4px">⚠ MAINT</span>`
-      : '';
-    const chargeDmgPart = (w.hasCharges&&w.chargeDmg)
-      ? ` <span style="color:var(--brass)">+ ${w.chargeDmg}</span>`
-      : '';
-    row.innerHTML=`<span style="color:var(--white)">⚔ ${w.name}</span>
-      <span style="color:var(--cyan);text-align:center;font-family:'Orbitron',monospace;font-weight:700">${bStr}</span>
-      <span style="color:var(--parchment-dim);text-align:center">${w.dmg||'—'}${chargeDmgPart}</span>
-      <span style="color:var(--parchment-dim);text-align:center;font-size:10px">${w.type||''}</span>
-      <span style="font-family:'Share Tech Mono',monospace;font-size:10px"></span>`;
-    el.appendChild(row);
-    // If this weapon has charges, add a sub-row with pips so they're easy to tap while rolling physical dice
-    if(w.hasCharges){
-      const subRow=document.createElement('div');
-      subRow.className='attack-row';
-      subRow.style.borderBottom='1px solid rgba(90,58,20,0.3)';
-      subRow.style.paddingTop='0';
-      subRow.innerHTML=`
-        <span style="grid-column:1/3;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px;padding-left:14px">
-          ${w.chargeName?w.chargeName+': ':''}${remaining}/${maxC} charges${chargeWarn}
-        </span>
-        <span style="grid-column:3/6;display:flex;gap:3px;align-items:center;justify-content:flex-end">${chargePipsHTML}</span>`;
-      el.appendChild(subRow);
-    }
+      const chargeWarn = w.hasCharges && remaining<=0
+        ? `<span style="color:var(--red);font-size:9px;animation:pulse 1.5s ease-in-out infinite;margin-left:4px">⚠ MAINT</span>`
+        : '';
+      const chargeDmgPart = (w.hasCharges&&w.chargeDmg)
+        ? ` <span style="color:var(--brass)">+ ${w.chargeDmg}</span>`
+        : '';
+      row.innerHTML=`<span style="color:var(--white)">⚔ ${w.name}</span>
+        <span style="color:var(--cyan);text-align:center;font-family:'Orbitron',monospace;font-weight:700">${bStr}</span>
+        <span style="color:var(--parchment-dim);text-align:center">${w.dmg||'—'}${chargeDmgPart}</span>
+        <span style="color:var(--parchment-dim);text-align:center;font-size:10px">${w.type||''}</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:10px"></span>`;
+      el.appendChild(row);
+      // If this weapon has charges, add a sub-row with pips so they're easy to tap while rolling physical dice
+      if(w.hasCharges){
+        const subRow=document.createElement('div');
+        subRow.className='attack-row';
+        subRow.style.borderBottom='1px solid rgba(90,58,20,0.3)';
+        subRow.style.paddingTop='0';
+        subRow.innerHTML=`
+          <span style="grid-column:1/3;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--brass-dim);letter-spacing:1px;padding-left:14px">
+            ${w.chargeName?w.chargeName+': ':''}${remaining}/${maxC} charges${chargeWarn}
+          </span>
+          <span style="grid-column:3/6;display:flex;gap:3px;align-items:center;justify-content:flex-end">${chargePipsHTML}</span>`;
+        el.appendChild(subRow);
+      }
+    });
   });
 }
 
@@ -1787,6 +2003,17 @@ function updateDerived(){
   if(baseACEl) baseACEl.value=state.baseAC;
   const baseSpdEl=document.getElementById('baseSpeedInput');
   if(baseSpdEl) baseSpdEl.value=state.baseSpeed;
+  const unarmACEl=document.getElementById('unarmouredACInput');
+  if(unarmACEl) unarmACEl.value=state.unarmouredAC ?? 11;
+  const unarmNameEl=document.getElementById('unarmouredArmourNameInput');
+  if(unarmNameEl) unarmNameEl.value=state.unarmouredArmourName||'Leather Armour';
+  const armNameEl=document.getElementById('armourNameInput');
+  if(armNameEl) armNameEl.value=state.armourName||'Chain Mail';
+  const acActiveEl=document.getElementById('acActiveLabel');
+  if(acActiveEl){
+    acActiveEl.textContent=currentArmourName();
+    acActiveEl.style.color=state.armoured?'var(--green)':'var(--brass-dim)';
+  }
   // Darkvision note
   const dvNote = document.getElementById('darkvisionNote');
   if(dvNote){
@@ -2536,7 +2763,7 @@ function toggleInvPip(id,p){
   const maxUses=invUses();
   if(!state.maintNeeded) state.maintNeeded={};
   if(state.invPipsUsed[id]>=maxUses) state.maintNeeded[id]=true;
-  buildInvSlots();buildActiveEffects();refreshMaintTracker();saveData();
+  buildInvSlots();buildActiveEffects();refreshMaintTracker();refreshActionsIfVisible();saveData();
 }
 function resetInv(id){
   state.invPipsUsed[id]=0;
@@ -2548,13 +2775,19 @@ function doMaintenance(id){
   state.invPipsUsed[id]=0;
   if(!state.maintNeeded) state.maintNeeded={};
   state.maintNeeded[id]=false;
-  buildInvSlots();buildActiveEffects();refreshMaintTracker();saveData();
+  buildInvSlots();buildActiveEffects();refreshMaintTracker();refreshActionsIfVisible();saveData();
 }
 function toggleBreakthrough(id,i){
   state.breakthroughUsed[id]=!state.breakthroughUsed[id];
-  buildBreakthroughSlots();refreshMaintTracker();saveData();
+  buildBreakthroughSlots();refreshMaintTracker();refreshActionsIfVisible();saveData();
 }
-function resetBreakthrough(id,i){state.breakthroughUsed[id]=false;buildBreakthroughSlots();refreshMaintTracker();saveData();}
+function resetBreakthrough(id,i){state.breakthroughUsed[id]=false;buildBreakthroughSlots();refreshMaintTracker();refreshActionsIfVisible();saveData();}
+
+// Rebuild the Actions tab only if it's currently the visible page (cheap guard)
+function refreshActionsIfVisible(){
+  const page=document.getElementById('tab-actions');
+  if(page && page.classList.contains('active')) buildActionsTab();
+}
 
 // ================================================================
 // FEATURES
@@ -2837,8 +3070,9 @@ function showTab(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
-  const map={main:0,library:1,loadout:2,features:3,notes:4};
+  const map={main:0,actions:1,library:2,loadout:3,features:4,notes:5};
   document.querySelectorAll('.tab')[map[name]].classList.add('active');
+  if(name==='actions') { buildActionsTab(); wirePanelHeaders(); }
   if(name==='library') { buildLibrary(); wirePanelHeaders(); }
   if(name==='loadout') { buildLoadout(); wirePanelHeaders(); }
   if(name==='features') { buildFeatures(); wirePanelHeaders(); }
